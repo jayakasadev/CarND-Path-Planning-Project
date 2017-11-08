@@ -244,7 +244,7 @@ int main() {
                 auto j = json::parse(s);
         
                 string event = j[0].get<string>();
-                // this is where the action happens/
+                // this is where the action happens
                 if (event == "telemetry") {
                     // j[1] is the data JSON object
 
@@ -275,6 +275,37 @@ int main() {
 
 
                     // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+                    /*
+                     * move the car forward in a straight line at a constant 50 MPH velocity. Use the car's (x, y)
+                     * localization information and its heading direction to create a simple, straight path that is
+                     * drawn directly in front of the car.
+                     * car went from 0 MPH to 56 MPH in a single 20 ms frame, causing a spike in acceleration.
+                     *
+                     * Acceleration is calculated by comparing the rate of change of average speed over .2 second
+                     * intervals. In this case total acceleration at one point was as high as 75 m/s^2. Jerk was also
+                     * very high. The jerk is calculated as the average acceleration over 1 second intervals. In order
+                     * for the passenger to have an enjoyable ride both the jerk and the total acceleration should not
+                     * exceed 10 m/s^2.
+                     *
+                     * Part of the total acceleration is the normal component, AccN which measures the centripetal
+                     * acceleration from turning. The tighter and faster a turn is made, the higher the AccN value will
+                     * be.
+                     */
+                    /*
+                    double dist_inc = 0.5;
+                    for(int i = 0; i < 50; i++) {
+                        next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
+                        next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+                    }
+                    */
+
+                    // going to try to go straight but stay in my lane
+                    double dist_inc = 0.5;
+                    for(int i = 0; i < 50; i++) {
+                        next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
+                        next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+                    }
+
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;
 
