@@ -291,7 +291,9 @@ int main() {
                      * acceleration from turning. The tighter and faster a turn is made, the higher the AccN value will
                      * be.
                      */
+
                     /*
+                    // driving using x, y coordinates in a straight line
                     double dist_inc = 0.5;
                     for(int i = 0; i < 50; i++) {
                         next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
@@ -299,12 +301,28 @@ int main() {
                     }
                     */
 
-                    // going to try to go straight but stay in my lane
+
+                    // going to try to go straight but stay in my lane using the s and d coordinate
                     double dist_inc = 0.5;
                     for(int i = 0; i < 50; i++) {
-                        next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
-                        next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+                        double next_s = car_s + (i + 1) * dist_inc; // start at i+1 because we want the next position,
+                        // and i is exactly where the car is, so there will be no transition, it will sit still
+                        double next_d = 6;
+                        // we start at 1 and a half lane away from the road boundaries
+                        // each lane is 4 meters wide, so 1.5 lanes * 4 meters = 6 meters away from the road boundary to
+                        // stay in the center of the lane
+
+                        // convert to x,y coordinates
+                        vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+
+                        next_x_vals.push_back(xy[0]);
+                        next_y_vals.push_back(xy[1]);
                     }
+                    /*
+                    for(int a = 0; a < next_x_vals.size(); a++){
+                        cout << "next_x_vals: " << next_x_vals[a] << " next_y_vals: " << next_y_vals[a] << endl;
+                    }
+                     */
 
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;
