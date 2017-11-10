@@ -237,8 +237,7 @@ int main() {
     double ref_vel = 49.5; // as close to speed limit as possible without going over 50
 
 
-    h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](
-            uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy, &lane, &ref_vel](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -359,6 +358,7 @@ int main() {
 
                     // if previous size is almost empty, use the car as starting reference
                     if(prev_size < 2){
+                        cout << "2 or fewer points previously" << endl;
                         // use two points that make the path tangent to the angle of the car
                         // look where the car is at, and go backwards in time based on its angle
                         // generate two points to make sure that path is tangent
@@ -371,7 +371,10 @@ int main() {
                         ptsy.push_back(prev_car_y);
                         ptsy.push_back(car_y);
 
+                        cout << prev_car_x << " < " << car_x << endl;
+
                     } else {
+                        cout << "more than 2 points previously" << endl;
                         // look at the last couple points in the previous path that the car was following and then
                         // calculate what angle the car was heading in using those last couple of points
                         // then push these points onto a list of previous points
@@ -394,6 +397,8 @@ int main() {
 
                         ptsy.push_back(ref_y_prev);
                         ptsy.push_back(car_y);
+
+                        cout << ref_x_prev << " < " << car_x << endl;
                     }
 
                     // at this point we have our starting reference points
@@ -411,6 +416,8 @@ int main() {
                     ptsy.push_back(next_wp1[1]);
                     ptsy.push_back(next_wp2[1]);
 
+                    // cout << next_wp2[0] << " " << next_wp2[1] << endl;
+
                     // now have 5 points on the points lists
 
                     // transform to car's local coordinates or to the car's point of view
@@ -425,6 +432,8 @@ int main() {
 
                         ptsx[a] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
                         ptsy[a] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
+
+                        cout << ptsx[a] << " " << ptsy[a] << endl;
                     }
 
                     // create a spline
@@ -443,21 +452,58 @@ int main() {
                     // instead of recreating the path from scratch every single time, we just add points onto it and
                     // work with what you still had left from last time
                     for(int a = 0; a < previous_path_x.size(); a++){
+                        // load up the future path with whatever was left over from the previous path
+                        // done for continuity
                         next_x_vals.push_back(previous_path_x[a]);
                         next_y_vals.push_back(previous_path_y[a]);
                     }
 
+                    /*
+                     * from the car's point of view or car coordinate system where the car is the origin
+                     *
+                     * forward for the car will be going at zero degrees
+                     *
+                     * the spline will give us the points in the path that are spaced alone the spline and spaced in
+                     * such a way that the car will move at the desired speed from the car to a desired point 30m away
+                     *
+                     * we do this by looking at some horizon value, 30m away in front of the car in this case
+                     * we figure out where that point lies on the spline by plugging it into the spline to get the
+                     * output y value
+                     * we need to calculate the distance from the car to the outputted value
+                     * we now want to split up distance d into n pieces
+                     * n pieces * .02 sec / piece * desired velocity (m/s) = distance calculated
+                     * we use the above formula to calculate n
+                     *
+                     *
+                     */
                     // calculate how to break up spline points so that we travel at our desired reference velocity
                     double target_x = 30.0;
                     double target_y = spline(target_x);
                     double target_dist = sqrt(pow(target_x, 2) + pow(target_y, 2));
 
-                    double x_add_on = 0;
+                    double x_add_on = 0; // has to do with the car local transformation; we start at the origin
 
                     // fill up the rest of the path planner after filling it with previous points,
                     // here we will always output 50 points
+                    // previous_path_x will not be 50 points
+                    // the simulator will probably go through a few of these points and report them the next time around
+                    // previous_path_x is not the full path, it is simply parts of it that the car did not move to yet
                     for(int a = 1; a <= 50 - previous_path_x.size(); a++){
+                        double n = (target_dist / (.02 * ref_vel / 2.24));// 2.24 m/s instead of 50mph
+                        double x_point = x_add_on + target_x / n; // start from the origin and work up to the target_x value
+                        double y_point = spline(x_point);
 
+                        x_add_on = x_point;
+
+                        double x_ref = x_point;
+                        double y_ref = y_point;
+
+                        // transform back to normal coordinate points
+                        x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw)) + ref_x;
+                        y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw)) + ref_y;
+
+                        next_x_vals.push_back(x_point);
+                        next_y_vals.push_back(y_point);
                     }
 
 

@@ -31,6 +31,7 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 
 // unnamed namespace only because the implementation is in this
@@ -290,8 +291,10 @@ void spline::set_points(const std::vector<double>& x,
     m_x=x;
     m_y=y;
     int   n=x.size();
+    std::cout << "spline" << std::endl;
     // TODO: maybe sort x and y, rather than returning an error
     for(int i=0; i<n-1; i++) {
+        std::cout << m_x[i] << " < " << m_x[i+1] << std::endl;
         assert(m_x[i]<m_x[i+1]);
     }
 
