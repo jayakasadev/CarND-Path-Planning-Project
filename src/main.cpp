@@ -234,10 +234,11 @@ int main() {
     int lane = 1; // lane 0 is far left, lane 2 is far right
 
     // reference velocity to target
-    double ref_vel = 49.5; // as close to speed limit as possible without going over 50
+    double ref_vel = 49.5; // as close to speed limit as possible without going over 50 mph
 
 
-    h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy, &lane, &ref_vel](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    h.onMessage([&map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane,
+                        &ref_vel](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -358,7 +359,7 @@ int main() {
 
                     // if previous size is almost empty, use the car as starting reference
                     if(prev_size < 2){
-                        cout << "2 or fewer points previously" << endl;
+                        // cout << "2 or fewer points previously" << endl;
                         // use two points that make the path tangent to the angle of the car
                         // look where the car is at, and go backwards in time based on its angle
                         // generate two points to make sure that path is tangent
@@ -371,10 +372,11 @@ int main() {
                         ptsy.push_back(prev_car_y);
                         ptsy.push_back(car_y);
 
-                        cout << prev_car_x << " < " << car_x << endl;
+                        // cout << "prev_car_x: " << prev_car_x << " prev_car_y: " << prev_car_y << endl;
+                        // cout << "car_x: " << car_x << " car_y: " << car_y << endl;
 
                     } else {
-                        cout << "more than 2 points previously" << endl;
+                        // cout << "more than 2 points previously" << endl;
                         // look at the last couple points in the previous path that the car was following and then
                         // calculate what angle the car was heading in using those last couple of points
                         // then push these points onto a list of previous points
@@ -392,13 +394,14 @@ int main() {
                         ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
 
                         // use the two points that make up the path tangent to the previous path's end point
-                        ptsx.push_back(ref_x_prev);
                         ptsx.push_back(car_x);
+                        ptsx.push_back(ref_x_prev);
 
-                        ptsy.push_back(ref_y_prev);
                         ptsy.push_back(car_y);
+                        ptsy.push_back(ref_y_prev);
 
-                        cout << ref_x_prev << " < " << car_x << endl;
+                        // cout << "ref_x_prev: " << ref_x_prev << " ref_y_prev: " << ref_y_prev << endl;
+                        // cout << "car_x: " << car_x << " car_y: " << car_y << endl;
                     }
 
                     // at this point we have our starting reference points
@@ -415,6 +418,12 @@ int main() {
                     ptsy.push_back(next_wp0[1]);
                     ptsy.push_back(next_wp1[1]);
                     ptsy.push_back(next_wp2[1]);
+
+                    /*
+                    for(int a = 0; a < ptsx.size(); a++){
+                        cout << "ptsx: " << ptsx[a] << " ptsy: " << ptsy[a] << endl;
+                    }
+                     */
 
                     // cout << next_wp2[0] << " " << next_wp2[1] << endl;
 
@@ -433,7 +442,7 @@ int main() {
                         ptsx[a] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
                         ptsy[a] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
 
-                        cout << ptsx[a] << " " << ptsy[a] << endl;
+                        // cout << ptsx[a] << " " << ptsy[a] << endl;
                     }
 
                     // create a spline
@@ -456,6 +465,7 @@ int main() {
                         // done for continuity
                         next_x_vals.push_back(previous_path_x[a]);
                         next_y_vals.push_back(previous_path_y[a]);
+                        // cout << "previous_path_x: " << previous_path_x[a] << " previous_path_y " << previous_path_y[a] << endl;
                     }
 
                     /*
@@ -490,7 +500,7 @@ int main() {
                     // previous_path_x is not the full path, it is simply parts of it that the car did not move to yet
                     for(int a = 1; a <= 50 - previous_path_x.size(); a++){
                         double n = (target_dist / (.02 * ref_vel / 2.24));// 2.24 m/s instead of 50mph
-                        double x_point = x_add_on + target_x / n; // start from the origin and work up to the target_x value
+                        double x_point = x_add_on + (target_x / n); // start from the origin and work up to the target_x value
                         double y_point = spline(x_point);
 
                         x_add_on = x_point;
@@ -505,6 +515,12 @@ int main() {
                         next_x_vals.push_back(x_point);
                         next_y_vals.push_back(y_point);
                     }
+
+                    /*
+                    for(int a = 0; a < next_x_vals.size(); a++){
+                        cout << "next_x_vals: " << next_x_vals[a] << " next_y_vals " << next_y_vals[a] << endl;
+                    }
+                     */
 
 
                     msgJson["next_x"] = next_x_vals;
