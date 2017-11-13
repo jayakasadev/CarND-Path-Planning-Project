@@ -342,6 +342,8 @@ int main() {
 
                     // we want the car to drive in a single lane and smoothly at a constant velocity
 
+                    // working on sensor fusion here to avoid obstacles
+
                     /*
                      * Create a list of widely spaced (x, y) waypoints, evenly spaced a 30 meters
                      * interpolate these points with a spline and fill in with more points that control speed
