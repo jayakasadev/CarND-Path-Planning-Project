@@ -15,6 +15,9 @@ using namespace std;
 // for convenience
 using json = nlohmann::json;
 
+// fixed speed limit
+const double speed_limit = 50.0;
+
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
@@ -234,11 +237,11 @@ int main() {
     int lane = 1; // lane 0 is far left, lane 2 is far right
 
     // reference velocity to target
-    double ref_vel = 49.5; // as close to speed limit as possible without going over 50 mph
+    double ref_vel = 0.0; // start from 0.0 mph and incrementally speed up instead of instantly jumping to 50mph
 
 
     h.onMessage([&map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane,
-                        &ref_vel](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+                        &ref_vel, &speed_limit](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -343,6 +346,42 @@ int main() {
                     // we want the car to drive in a single lane and smoothly at a constant velocity
 
                     // working on sensor fusion here to avoid obstacles
+                    if(prev_size > 0){
+                        // if i have any previous path points. going to change my current s so that it is actually representative of the previous path last point's s
+                        // done in frenet because it simplifies the logic
+                        car_s = end_path_s;
+                    }
+
+                    bool too_close = false;
+
+                    // find ref_v to use
+                    for(int a = 0; a < sensor_fusion.size(); a++){
+                        // car is in my lane
+                        // looking at the ath car on the road
+                        float d = sensor_fusion[a][6]; // this is the d value for the ath vehicle
+                        // cout << "a: " << a << " d: " << d << endl;
+                        if(d < (4 + 4 * lane) && d < (4 * lane)){ // checking if the car is in the range of my lane
+                            double vx = sensor_fusion[a][3]; // lateral velocity
+                            double vy = sensor_fusion[a][4]; // longitudinal velocity
+                            double check_speed = sqrt(pow(vx, 2) + pow(vy, 2)); // velocity
+                            double check_car_s = sensor_fusion[a][5]; // s value of the ath car
+                            // cout << "\tcheck_car_s: " << check_car_s << endl;
+
+                            // if using previous points can project s value out
+                            check_car_s += ((double) prev_size * .02 * check_speed);// predicting where the car will be (.02 * prev points) seconds in the future
+                            // cout << "\tfuture check_car_s: " << check_car_s << endl;
+                            // cout << "\tcar_s: " << car_s << endl;
+
+                            // check s values greater than mine and s gap
+                            if((check_car_s > car_s) && ((check_car_s - car_s) < 30)) { // check if the car will be within 30m of my car in the future
+                                // do some logic here, lower reference velocity so we don't crash into the car in front of us, could also flag to try to change lanes
+                                // ref_vel = 29.5; // mph // set speed change
+                                too_close = true; // flag used to make incremental changes to the speed
+                            }
+                        }
+                    }
+
+                    // cout << "ref_vel: " << ref_vel << endl;
 
                     /*
                      * Create a list of widely spaced (x, y) waypoints, evenly spaced a 30 meters
@@ -444,8 +483,18 @@ int main() {
                         ptsx[a] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
                         ptsy[a] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
 
+                        // todo experiment with speed placement
+                        // doing the speed increment here to be a little efficient
                         // cout << ptsx[a] << " " << ptsy[a] << endl;
+                        if(too_close && ref_vel > 0){
+                            ref_vel -= .224; // -= 5m/s if the vehicle is too close, decrease by .224 each time until its 30m away
+                        } else if(ref_vel < speed_limit){
+                            // if going too slow, incrementally speed up
+                            ref_vel += .224; // += 5m/s
+                        }
                     }
+                    if(ref_vel > speed_limit) ref_vel = speed_limit - .05; // safety check to make sure i don't go over the speed limit
+                    if(ref_vel < 0) ref_vel = 0.0; // safety check to keep the car from going backwards or having negative velocity
 
                     // create a spline
                     tk::spline spline;
