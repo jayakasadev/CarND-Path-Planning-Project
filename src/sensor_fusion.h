@@ -8,6 +8,8 @@
 #include <vector>
 #include <math.h>
 #include "constants.h"
+#include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -16,7 +18,8 @@ private:
     int lane;
     double speed;
 
-    float search(int lane, vector<vector<double>> sensor_fusion, int prev_size, double car_s, bool side, double &speed, float &cost);
+    void search(int lane, vector<vector<double>> sensor_fusion, int prev_size, double car_s, bool side, double &speed, float &cost);
+    inline int min_element(float arr[], int size);
 
 public:
     sensor_fusion(){}
@@ -27,7 +30,7 @@ public:
 
     double getSpeed();
 
-    void calculateCost(vector<vector<double>> sensor_fusion, int prev_size, double car_s);
+    void calculateCost(vector<vector<double>> sensor_fusion, int prev_size, double car_s, short lane);
 };
 
 

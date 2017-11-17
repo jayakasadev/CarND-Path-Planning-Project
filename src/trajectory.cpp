@@ -175,7 +175,7 @@ void trajectory::generate(int prev_size, double car_x, double car_y, double car_
             // if going too slow, incrementally speed up
             ref_vel += speed_adjust_rate; // += 5m/s
         }
-        if(ref_vel >= speed_limit) ref_vel = speed_limit - .01;
+        if(ref_vel >= speed_limit) ref_vel = speed_limit - .5;// modified to keep the car under the speed limit
 
         double n = (target_dist / (time_interval * ref_vel / mph_2_mps));// 2.24 m/s instead of 50mph
         double x_point = x_add_on + (target_x / n); // start from the origin and work up to the target_x value

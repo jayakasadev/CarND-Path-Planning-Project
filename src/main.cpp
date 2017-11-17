@@ -51,7 +51,7 @@ int main() {
     }
 
     // start in lane 1
-    int lane = 1; // lane 0 is far left, lane 2 is far right
+    short lane = 1; // lane 0 is far left, lane 2 is far right
 
     // reference velocity to target
     double ref_vel = 0.0; // start from 0.0 mph and incrementally speed up instead of instantly jumping to 50mph
@@ -174,11 +174,13 @@ int main() {
                     // bool too_close = false;
                     // double speed = speed_limit;
 
-                    sensor.calculateCost(sensor_fusion, prev_size, car_s);
+                    sensor.calculateCost(sensor_fusion, prev_size, car_s, lane);
+
+                    lane = sensor.getLane();
 
                     // cout << "ref_vel: " << ref_vel << endl;
                     traj.generate(prev_size, car_x, car_y, car_yaw, previous_path_x, previous_path_y, map_waypoints_s,
-                            map_waypoints_x, map_waypoints_y, car_s, sensor.getSpeed(), sensor.getLane());
+                            map_waypoints_x, map_waypoints_y, car_s, sensor.getSpeed(), lane);
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();
