@@ -6,7 +6,8 @@
 
 void trajectory::generate(int prev_size, double car_x, double car_y, double car_yaw,
                           vector<double> previous_path_x, vector<double> previous_path_y, vector<double> map_waypoints_s,
-                          vector<double> map_waypoints_x, vector<double> map_waypoints_y, double car_s, double speed, int lane){
+                          vector<double> map_waypoints_x, vector<double> map_waypoints_y, double car_s, double speed,
+                          int lane){
     // make sure the next_x_vals and next_y_vals are empty
     next_x_vals.clear();
     next_y_vals.clear();
@@ -151,9 +152,9 @@ void trajectory::generate(int prev_size, double car_x, double car_y, double car_
      *
      */
     // calculate how to break up spline points so that we travel at our desired reference velocity
-    double target_x = spacing;
-    double target_y = spline(target_x);
-    double target_dist = sqrt(pow(target_x, 2) + pow(target_y, 2));
+    // double target_x = spacing;
+    double target_y = spline(spacing);
+    double target_dist = sqrt(pow(spacing, 2) + pow(target_y, 2));
 
     double x_add_on = 0; // has to do with the car local transformation; we start at the origin
 
@@ -167,7 +168,7 @@ void trajectory::generate(int prev_size, double car_x, double car_y, double car_
         // doing the speed increment here to be a little efficient
         // cout << ptsx[a] << " " << ptsy[a] << endl;
         // done here because we use the ref_vel value to plan out the future path
-        // can take deceleration into account here
+        // going straight
         if(ref_vel > speed){
             ref_vel -= speed_adjust_rate; // -= 5m/s if the vehicle is too close, decrease by .224 each time until its 30m away
             if(ref_vel < speed) ref_vel = speed; // instead of slowing completely to a stop, I'm gonna slow down just enough that I match the car in front of me
@@ -175,10 +176,12 @@ void trajectory::generate(int prev_size, double car_x, double car_y, double car_
             // if going too slow, incrementally speed up
             ref_vel += speed_adjust_rate; // += 5m/s
         }
+        if(ref_vel < 0) ref_vel = 0;
         if(ref_vel >= speed_limit) ref_vel = speed_limit - 1;// modified to keep the car under the speed limit
 
+
         double n = (target_dist / (time_interval * ref_vel / mph_2_mps));// 2.24 m/s instead of 50mph
-        double x_point = x_add_on + (target_x / n); // start from the origin and work up to the target_x value
+        double x_point = x_add_on + (spacing / n); // start from the origin and work up to the target_x value
         double y_point = spline(x_point);
 
         x_add_on = x_point;

@@ -32,8 +32,9 @@ void sensor_fusion::search(int lane, vector<vector<double>> sensor_fusion, int p
                 // ref_vel = 29.5; // mph // set speed change
                 // cout << "\tOBSTACLE lane:" << lane << endl;
                 // too_close = true; // flag used to make incremental changes to the speed
-                cout << "lane: " << lane << " check_car_s: " << check_car_s << " car_s: " << car_s << " check_speed: " << check_speed << endl;
+                // cout << "lane: " << lane << " check_car_s: " << check_car_s << " car_s: " << car_s << " check_speed: " << check_speed << endl;
                 speed = check_speed;
+                // speed = vy;
                 front_car = check_car_s;
                 // cout << "speed: " << speed << endl;
                 if(!side){ // if im not trying to check the sides of the car
@@ -43,7 +44,7 @@ void sensor_fusion::search(int lane, vector<vector<double>> sensor_fusion, int p
             if(side){
                 // check the sides as well because the car is not in this lane and may want to consider turning into a new lane
                 if((check_car_s < car_s) && ((car_s - check_car_s) < 7)) { // checking the side/back
-                    cout << "lane: " << lane << " check_car_s: " << check_car_s << " car_s: " << car_s << " check_speed: " << check_speed << endl;
+                    // cout << "lane: " << lane << " check_car_s: " << check_car_s << " car_s: " << car_s << " check_speed: " << check_speed << endl;
                     back_car = check_car_s;
                 }
             }

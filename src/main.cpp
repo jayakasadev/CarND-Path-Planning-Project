@@ -176,11 +176,12 @@ int main() {
 
                     sensor.calculateCost(sensor_fusion, prev_size, car_s, lane);
 
+                    // gotta change lanes
                     lane = sensor.getLane();
 
                     // cout << "ref_vel: " << ref_vel << endl;
                     traj.generate(prev_size, car_x, car_y, car_yaw, previous_path_x, previous_path_y, map_waypoints_s,
-                            map_waypoints_x, map_waypoints_y, car_s, sensor.getSpeed(), lane);
+                                      map_waypoints_x, map_waypoints_y, car_s, sensor.getSpeed(), lane);
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();
