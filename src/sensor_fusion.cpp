@@ -6,7 +6,7 @@
 
 void sensor_fusion::search(int lane, vector<vector<double>> sensor_fusion, int prev_size, double car_s, bool side, double &speed, float &cost){
     double front_car = car_s + 30;
-    double back_car = car_s -10;
+    double back_car = car_s - 7;
 
     // find ref_v to use
     for(int a = 0; a < sensor_fusion.size(); a++){
@@ -42,7 +42,7 @@ void sensor_fusion::search(int lane, vector<vector<double>> sensor_fusion, int p
             }
             if(side){
                 // check the sides as well because the car is not in this lane and may want to consider turning into a new lane
-                if((check_car_s < car_s) && ((car_s - check_car_s) < 10)) { // checking the side/back
+                if((check_car_s < car_s) && ((car_s - check_car_s) < 7)) { // checking the side/back
                     cout << "lane: " << lane << " check_car_s: " << check_car_s << " car_s: " << car_s << " check_speed: " << check_speed << endl;
                     back_car = check_car_s;
                 }
@@ -51,7 +51,7 @@ void sensor_fusion::search(int lane, vector<vector<double>> sensor_fusion, int p
     }
 
     if(side){
-        if(front_car - back_car >= 40){ // if there is enough space to go
+        if(front_car - back_car >= 37){ // if there is enough space to go
             cost = - speed + 100;
         }
     }else{
