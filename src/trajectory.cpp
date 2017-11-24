@@ -64,11 +64,11 @@ void trajectory::generate(int prev_size, double car_x, double car_y, double car_
         ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
 
         // use the two points that make up the path tangent to the previous path's end point
-        ptsx.push_back(car_x);
         ptsx.push_back(ref_x_prev);
+        ptsx.push_back(car_x);
 
-        ptsy.push_back(car_y);
         ptsy.push_back(ref_y_prev);
+        ptsy.push_back(car_y);
 
         // cout << "ref_x_prev: " << ref_x_prev << " ref_y_prev: " << ref_y_prev << endl;
         // cout << "car_x: " << car_x << " car_y: " << car_y << endl;
