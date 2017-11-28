@@ -7,8 +7,11 @@
 
 #include <vector>
 #include "spline.h"
-#include "constants.h"
 #include "utilities.h"
+#include "map.h"
+#include "constants.h"
+#include "car_state.h"
+#include "vehicle.h"
 
 using namespace std;
 
@@ -25,15 +28,14 @@ public:
 
     ~trajectory(){} // destructor
 
-    void generate(int prev_size, double car_x, double car_y, double car_yaw,
-             vector<double> previous_path_x, vector<double> previous_path_y, vector<double> map_waypoints_s,
-             vector<double> map_waypoints_x, vector<double> map_waypoints_y, double car_s, double speed, int lane);
+    void generate(int prev_size,vector<double> &previous_path_x, vector<double> &previous_path_y, driver &driver,
+                  vector<lane_state> &lane_score, vector<float> &velocity_score);
 
     float getCost();
 
-    vector<double> getNext_x_vals();
+    vector<double> * getNext_x_vals();
 
-    vector<double> getNext_y_vals();
+    vector<double> * getNext_y_vals();
 };
 
 
