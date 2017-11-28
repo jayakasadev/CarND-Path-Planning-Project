@@ -27,6 +27,6 @@ const float max_jerk = 50;
 
 const long time_diff = 5000; // if i do not see a vehicle for more than 5 seconds I forget about it
 
-const map_data map = map_data::getInstance();
+const map_data mapData = map_data::getInstance();
 
 #endif //CONSTANTS_H

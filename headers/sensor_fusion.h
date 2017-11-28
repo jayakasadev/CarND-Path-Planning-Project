@@ -9,6 +9,7 @@
 #include <math.h>
 #include "constants.h"
 #include "vehicle.h"
+#include "json.hpp"
 #include <iostream>
 #include <algorithm>
 #include <thread>
@@ -19,24 +20,30 @@ using namespace std;
 class sensor_fusion {
 private:
 
-    void search(int lane, vector<vector<double>> &sensor_fusion, int prev_size, driver &driver);
+    void search(int lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver);
     inline int min_element(float arr[], int size);
 
     vector<lane_state> lanes;
-    vector<float> velocity;
+    vector<double> velocity;
     map<double, other_vehicle> others;
 
-    inline short search_field(int lane, int curr_lane);
+    inline static short search_field(int lane, int curr_lane) {
+        return abs(lane - curr_lane) * 2.5 + 2.5;
+    }
 
 public:
     sensor_fusion(){}
 
     ~sensor_fusion(){}
 
-    void calculateCost(vector<vector<double>> &sensor_fusion, int prev_size, driver &driver);
+    void calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver);
 
-    inline vector<lane_state>* getLaneScore();
-    inline vector<float>* getVelocityScore();
+    inline vector<lane_state> getLaneScore(){
+        return lanes;
+    }
+    inline vector<double> getVelocityScore(){
+        return velocity;
+    }
 };
 
 

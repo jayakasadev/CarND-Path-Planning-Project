@@ -6,7 +6,7 @@
 #include <thread>
 // #include "Eigen-3.3/Eigen/Core"
 // #include "Eigen-3.3/Eigen/QR"
-#include "json.hpp"
+#include "../headers/json.hpp"
 #include "../headers/utilities.h"
 #include "../headers/trajectory.h"
 #include "../headers/sensor_fusion.h"
@@ -17,10 +17,27 @@ using namespace std;
 // for convenience
 using json = nlohmann::json;
 
+/**
+ * Checks if the SocketIO event has JSON data. If there is data the JSON object in string format will be returned, else
+ * the empty string "" will be returned.
+ *
+ * @param s
+ * @return
+ */
+string hasData(string s) {
+    auto found_null = s.find("null");
+    auto b1 = s.find_first_of("[");
+    auto b2 = s.find_first_of("}");
+    if (found_null != string::npos) {
+        return "";
+    } else if (b1 != string::npos && b2 != string::npos) {
+        return s.substr(b1, b2 - b1 + 2);
+    }
+    return "";
+}
+
 int main() {
     uWS::Hub h;
-
-    bool first = true; // used to initialize
 
     // start in lane 1
     // short lane = 1; // lane 0 is far left, lane 2 is far right
@@ -33,9 +50,9 @@ int main() {
     sensor_fusion sensor;
 
 
-    driver* vehicle;
+    driver vehicle;
 
-    h.onMessage([&ref_vel, &traj, &sensor, &first](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    h.onMessage([&vehicle, &ref_vel, &traj, &sensor](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -73,11 +90,6 @@ int main() {
                     auto sensor_fusion = j[1]["sensor_fusion"];
 
                     json msgJson;
-
-                    if(first){
-                        vehicle = new driver(car_speed, car_x, car_y, car_s, car_d);
-                        first = false;
-                    }
 
                     // as long as these vectors are empty, the car will not go anywhere
                     vector<double> next_x_vals;
@@ -148,19 +160,26 @@ int main() {
                         // if i have any previous path points. going to change my current s so that it is actually
                         // representative of the previous path last point's s
                         // done in frenet because it simplifies the logic
-                        vehicle->updateVehicle(car_speed, car_x, car_y, end_path_s, car_d);
+                        vehicle.updateVehicle(car_speed, car_x, car_y, end_path_s, car_d);
+                    }
+                    else{
+                        vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d);
                     }
 
                     // bool too_close = false;
                     // double speed = speed_limit;
 
-                    sensor.calculateCost(sensor_fusion, prev_size, *vehicle);
+                    sensor.calculateCost(sensor_fusion, prev_size, vehicle);
 
                     // gotta change lanes
                     // lane = sensor.getLane();
 
                     // cout << "ref_vel: " << ref_vel << endl;
-                    traj.generate(prev_size, previous_path_x, previous_path_y, *vehicle, *sensor.getLaneScore(), *sensor.getVelocityScore());
+
+                    vector<lane_state> lanes = sensor.getLaneScore();
+                    vector<double> velocity = sensor.getVelocityScore();
+
+                    traj.generate(prev_size, previous_path_x, previous_path_y, vehicle, lanes, velocity);
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();
@@ -197,7 +216,6 @@ int main() {
     });
 
     h.onDisconnection([&h, &vehicle](uWS::WebSocket<uWS::SERVER> ws, int code, char *message, size_t length) {
-        delete vehicle;
         ws.close();
         std::cout << "Disconnected" << std::endl;
     });

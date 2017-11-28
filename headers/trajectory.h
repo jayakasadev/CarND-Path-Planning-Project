@@ -6,12 +6,12 @@
 #define PATH_PLANNING_TRAJECTORY_H
 
 #include <vector>
-#include "spline.h"
 #include "utilities.h"
 #include "map.h"
 #include "constants.h"
 #include "car_state.h"
 #include "vehicle.h"
+#include "json.hpp"
 
 using namespace std;
 
@@ -19,8 +19,6 @@ class trajectory {
 private:
     vector<double> next_x_vals;
     vector<double> next_y_vals;
-    // create a spline
-    tk::spline spline;
     double ref_vel;
 
 public:
@@ -28,14 +26,14 @@ public:
 
     ~trajectory(){} // destructor
 
-    void generate(int prev_size,vector<double> &previous_path_x, vector<double> &previous_path_y, driver &driver,
-                  vector<lane_state> &lane_score, vector<float> &velocity_score);
+    void generate(int prev_size, nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y, driver &driver,
+                  const vector<lane_state> &lane_score, const vector<double> &velocity_score);
 
     float getCost();
 
-    vector<double> * getNext_x_vals();
+    vector<double> getNext_x_vals();
 
-    vector<double> * getNext_y_vals();
+    vector<double> getNext_y_vals();
 };
 
 

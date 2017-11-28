@@ -4,7 +4,7 @@
 
 #include "../headers/sensor_fusion.h"
 
-void sensor_fusion::search(int lane, vector<vector<double>> &sensor_fusion, int prev_size, driver &driver){
+void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver){
     for(int a = 0; a < sensor_fusion.size(); a++){
         // check if car is in the desired lane
         double d = sensor_fusion[a][6]; // this is the d value for the ath vehicle
@@ -22,14 +22,14 @@ void sensor_fusion::search(int lane, vector<vector<double>> &sensor_fusion, int 
                 *otherVehicle = others.at(id);
                 // outdated
                 if(otherVehicle->updateTime() >= time_diff){
-                    others.at(id) = *new other_vehicle(vx, vy, x, y, d);
+                    others.at(id).updateVehicle(vx, vy, x, y, d);
                 }
                 else{
                     // recent and valid
                     otherVehicle->updateVehicle(vx, vy, x, y, d);
                 }
             } else{
-                others.at(id) = *new other_vehicle(vx, vy, x, y, d);
+                others.at(id).updateVehicle(vx, vy, x, y, d);
             }
 
             double pred_s, pred_d, pred_velocity;
@@ -63,28 +63,23 @@ void sensor_fusion::search(int lane, vector<vector<double>> &sensor_fusion, int 
     }
 }
 
-void sensor_fusion::calculateCost(vector<vector<double>> &sensor_fusion, int prev_size, driver &driver){
+void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver){
     lanes = {OPEN, OPEN, OPEN};
     velocity = {speed_limit, speed_limit, speed_limit};
 
-    thread lane0(search(0, sensor_fusion, prev_size, driver));
-    thread lane1(search(1, sensor_fusion, prev_size, driver));
-    thread lane2(search(2, sensor_fusion, prev_size, driver));
+    /*
+    thread lane0([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
+    thread lane1([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
+    thread lane2([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
 
     lane0.join();
     lane1.join();
     lane2.join();
+    */
+
+    search(0, sensor_fusion, prev_size, driver);
+    search(1, sensor_fusion, prev_size, driver);
+    search(2, sensor_fusion, prev_size, driver);
+
     // gonna return when all the threads are done
-}
-
-inline vector<lane_state>* sensor_fusion::getLaneScore(){
-    return &lanes;
-}
-
-inline vector<float>* sensor_fusion::getVelocityScore(){
-    return &velocity;
-}
-
-inline short sensor_fusion::search_field(int lane, int curr_lane){
-    return abs(lane - curr_lane) * 2.5 + 2.5;
 }

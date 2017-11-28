@@ -13,7 +13,10 @@
 
 using namespace std::chrono;
 
-struct vehicle{
+class vehicle{
+public:
+    vehicle(){};
+    ~vehicle(){};
 protected:
 
     double x;
@@ -29,27 +32,28 @@ private:
     double vy;
     double ax;
     double ay;
+    bool first;
 
     high_resolution_clock::time_point last_Seen;
 
 public:
-    other_vehicle(double vx_val, double vy_val, double x, double y, double d_val){
-        ax = ay = 0;
+    other_vehicle(){
+        first = true;
         yaw = 0;
-        this->x = x;
-        this->y = y;
-        this->vx = vx_val;
-        this->vy = vy_val;
-
-        lane = (d_val-2) / 4;
-
-        last_Seen = high_resolution_clock::now();
-    }
+    };
     ~other_vehicle(){};
 
     inline void updateVehicle(double vx_val, double vy_val, double x, double y, double d){
-        this->ax = (vx_val - this->vx) / time_interval; // calculate acceleration
-        this->ay = (vy_val - this->vy) / time_interval; // calculate acceleration
+        if(!first){
+            this->ax = (vx_val - this->vx) / time_interval; // calculate acceleration
+            this->ay = (vy_val - this->vy) / time_interval; // calculate acceleration
+            // get yaw before updating position
+            yaw = mapData.getYaw(y, this->y, x, this->x);
+        }
+        else{
+            this->ax = this->ay = 0;
+            first = false;
+        }
 
         this->vx = vx_val; // set velocity
         this->vy = vy_val; // set velocity
@@ -58,7 +62,7 @@ public:
         this->y = y;
         lane = (d-2) / 4;
 
-        yaw = getYaw(y, this->y, x, this->x);
+        last_Seen = high_resolution_clock::now();
     }
 
     inline short getLane(){
@@ -69,7 +73,7 @@ public:
         // predict the position
         double px = x + vx * (time_interval * prev_size) + ax * pow(time_interval* prev_size, 2);
         double py = y + vy * time_interval + ay * pow(time_interval, 2);
-        vector<double> vals = getFrenet(px, py, yaw);
+        vector<double> vals = mapData.getFrenet(px, py, yaw);
         s = vals[0];
         d = vals[1];
 
@@ -79,10 +83,7 @@ public:
     }
 
     inline long updateTime(){
-        high_resolution_clock::time_point curr = high_resolution_clock::now();
-        long diff = (curr - last_Seen).count();
-        last_Seen = curr;
-        return diff;
+        return (high_resolution_clock::now() - last_Seen).count();
     }
 };
 
@@ -91,38 +92,31 @@ private:
     double velocity;
     double acceleration;
     double s;
+    bool first;
 
     turn turn_type;
 public:
 
-    driver(double v_val, double x, double y, double s, double d_val){
-        acceleration = 0;
-        turn_type = UNKNOWN;
-        yaw = 0;
-
-        this->x = x;
-        this->y = y;
-        this->velocity = v_val;
-
-        lane = (d_val-2) / 4;
-
-        this->s = s;
-    }
-
+    driver():first(true){}
     ~driver(){}
 
     inline void updateVehicle(double v_val, double x, double y, double s, double d){
-        this->acceleration = (v_val - this->velocity) / time_interval; // calculate acceleration
+        if(!first){
+            this->acceleration = (v_val - this->velocity) / time_interval; // calculate acceleration
+        } else {
+            this->acceleration = 0;
+            first = false;
+        }
 
         this->velocity = v_val; // set velocity
+
+        yaw = mapData.getYaw(y, this->y, x, this->x);
 
         this->x = x;
         this->y = y;
         lane = (d-2) / 4;
 
         this->s = s;
-
-        yaw = getYaw(y, this->y, x, this->x);
     }
 
     inline void setTurnType(turn type){
