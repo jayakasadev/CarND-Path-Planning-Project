@@ -10,7 +10,6 @@
 #include "utilities/utilities.h"
 #include "trajectory_generation/trajectory.h"
 #include "sensor_fusion/sensor_fusion.h"
-#include "utilities/vehicle.h"
 
 using namespace std;
 

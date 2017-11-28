@@ -25,6 +25,7 @@ private:
 
     vector<lane_state> lanes;
     vector<double> velocity;
+    vector<double> distance;
     map<double, other_vehicle> others;
 
     inline static short search_field(int lane, int curr_lane) {
@@ -43,6 +44,9 @@ public:
     }
     inline vector<double> getVelocityScore(){
         return velocity;
+    }
+    inline vector<double> getDistanceScore(){
+        return distance;
     }
 };
 

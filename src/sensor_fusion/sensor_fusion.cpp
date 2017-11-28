@@ -39,22 +39,25 @@ void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int 
             others.at(id).predict(pred_s, pred_d, pred_velocity, prev_size);
 
             // check if it is in the area of interest in its current lane
-            if(abs(check_car_s - (driver.getS() + 5)) <= search_field(lane, driver.getLane())){
+            if(abs(check_car_s - (driver.getS() + buffer)) <= search_field(lane, driver.getLane())){
                 lanes[lane] = OBSTRUCTION; // mark lane as obstructed
 
                 // only updated if lower than the current speed
                 if(velocity[lane] > check_speed){
                     velocity[lane] = check_speed;
                 }
+                distance[lane] = pred_s - driver.getS();
             }
 
             // check if it is in the area of interest in its future lane
-            if(abs(pred_s - (driver.getS() + 5)) <= search_field((pred_d/4), driver.getLane())){
-                if((pred_d/4) == driver.getLane() && pred_s > driver.getS()){
-                    lanes[(pred_d/4)] = FOLLOW;
-                }
-                else{
-                    lanes[(pred_d/4)] = OBSTRUCTION; // mark lane as obstructed
+            if(abs(pred_s - (driver.getS() + buffer)) <= search_field((pred_d/4), driver.getLane())){
+                if(pred_s > driver.getS()){
+                    if((pred_d/4) == driver.getLane()){
+                        lanes[(pred_d/4)] = FOLLOW;
+                    } else {
+                        lanes[(pred_d/4)] = OBSTRUCTION; // mark lane as obstructed
+                    }
+                    distance[(pred_d/4)] = pred_s - driver.getS();
                 }
 
                 // only updated if lower than the current speed
@@ -69,6 +72,7 @@ void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int 
 void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver){
     lanes = {OPEN, OPEN, OPEN};
     velocity = {speed_limit, speed_limit, speed_limit};
+    distance = {spacing, spacing, spacing};
 
     /*
     thread lane0([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
@@ -86,9 +90,9 @@ void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &pr
 
     // gonna return when all the threads are done
 
-    cout << "lanes || velocity" << endl;
+    cout << "lanes || velocity || distance" << endl;
     for(int a = 0; a < 3; a++){
-        cout << lanes[a] << " || " << velocity[a] << endl;
+        cout << lanes[a] << " || " << velocity[a] << " || " << distance[a] << endl;
     }
 }
 
