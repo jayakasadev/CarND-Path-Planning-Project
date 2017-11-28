@@ -4,6 +4,7 @@
 
 #include "../headers/sensor_fusion.h"
 
+// TODO make map threadsafe
 void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver){
     for(int a = 0; a < sensor_fusion.size(); a++){
         // check if car is in the desired lane
@@ -17,23 +18,25 @@ void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int 
             double vy = sensor_fusion[a][4]; // longitudinal velocity
             double check_speed = sqrt(pow(vx, 2) + pow(vy, 2)); // velocity
             double check_car_s = sensor_fusion[a][5]; // s value of the ath car
-            other_vehicle* otherVehicle;
+            // cout << "others: " << others.size() << endl;
             if(others.find(id) != others.end()){
-                *otherVehicle = others.at(id);
                 // outdated
-                if(otherVehicle->updateTime() >= time_diff){
+                if(others.at(id).updateTime() >= time_diff){
                     others.at(id).updateVehicle(vx, vy, x, y, d);
                 }
                 else{
                     // recent and valid
-                    otherVehicle->updateVehicle(vx, vy, x, y, d);
+                    others.at(id).updateVehicle(vx, vy, x, y, d);
                 }
             } else{
-                others.at(id).updateVehicle(vx, vy, x, y, d);
+                other_vehicle otherVehicle;
+                otherVehicle.updateVehicle(vx, vy, x, y, d);
+                others[id] = otherVehicle;
+
             }
 
             double pred_s, pred_d, pred_velocity;
-            otherVehicle->predict(pred_s, pred_d, pred_velocity, prev_size);
+            others.at(id).predict(pred_s, pred_d, pred_velocity, prev_size);
 
             // check if it is in the area of interest in its current lane
             if(abs(check_car_s - (driver.getS() + 5)) <= search_field(lane, driver.getLane())){
@@ -75,11 +78,18 @@ void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &pr
     lane0.join();
     lane1.join();
     lane2.join();
-    */
+     */
 
     search(0, sensor_fusion, prev_size, driver);
     search(1, sensor_fusion, prev_size, driver);
     search(2, sensor_fusion, prev_size, driver);
 
     // gonna return when all the threads are done
+
+    cout << "lanes || velocity" << endl;
+    for(int a = 0; a < 3; a++){
+        cout << lanes[a] << " || " << velocity[a] << endl;
+    }
 }
+
+// TODO create method to free up space in the map periodically
