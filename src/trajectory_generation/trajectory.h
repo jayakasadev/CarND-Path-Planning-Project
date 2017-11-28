@@ -6,12 +6,12 @@
 #define PATH_PLANNING_TRAJECTORY_H
 
 #include <vector>
-#include "utilities.h"
-#include "map.h"
-#include "constants.h"
-#include "car_state.h"
-#include "vehicle.h"
-#include "json.hpp"
+#include "../utilities/utilities.h"
+#include "../utilities/map.h"
+#include "../utilities/constants.h"
+#include "../utilities/car_state.h"
+#include "../utilities/vehicle.h"
+#include "../utilities/json.hpp"
 
 using namespace std;
 

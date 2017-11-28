@@ -6,11 +6,11 @@
 #include <thread>
 // #include "Eigen-3.3/Eigen/Core"
 // #include "Eigen-3.3/Eigen/QR"
-#include "../headers/json.hpp"
-#include "../headers/utilities.h"
-#include "../headers/trajectory.h"
-#include "../headers/sensor_fusion.h"
-#include "../headers/vehicle.h"
+#include "utilities/json.hpp"
+#include "utilities/utilities.h"
+#include "trajectory_generation/trajectory.h"
+#include "sensor_fusion/sensor_fusion.h"
+#include "utilities/vehicle.h"
 
 using namespace std;
 

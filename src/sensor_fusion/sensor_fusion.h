@@ -7,9 +7,9 @@
 
 #include <vector>
 #include <math.h>
-#include "constants.h"
-#include "vehicle.h"
-#include "json.hpp"
+#include "../utilities/constants.h"
+#include "../utilities/vehicle.h"
+#include "../utilities/json.hpp"
 #include <iostream>
 #include <algorithm>
 #include <thread>

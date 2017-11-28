@@ -2,7 +2,7 @@
 // Created by jay on 11/15/17.
 //
 
-#include "../headers/sensor_fusion.h"
+#include "sensor_fusion.h"
 
 // TODO make map threadsafe
 void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver){
