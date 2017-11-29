@@ -48,10 +48,10 @@ int main() {
     trajectory traj;
     sensor_fusion sensor;
 
-
     driver vehicle;
+    scores scores;
 
-    h.onMessage([&vehicle, &ref_vel, &traj, &sensor](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    h.onMessage([&vehicle, &ref_vel, &traj, &sensor, &scores](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -168,17 +168,12 @@ int main() {
                     // bool too_close = false;
                     // double speed = speed_limit;
 
-                    sensor.calculateCost(sensor_fusion, prev_size, vehicle);
+                    sensor.calculateCost(sensor_fusion, prev_size, vehicle, scores);
 
                     // gotta change lanes
                     // lane = sensor.getLane();
 
-                    // cout << "ref_vel: " << ref_vel << endl;
-
-                    vector<lane_state> lanes = sensor.getLaneScore();
-                    vector<double> velocity = sensor.getVelocityScore();
-
-                    traj.generate(prev_size, previous_path_x, previous_path_y, vehicle, lanes, velocity);
+                    traj.generate(prev_size, previous_path_x, previous_path_y, vehicle, scores);
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();

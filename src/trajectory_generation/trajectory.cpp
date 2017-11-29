@@ -1,8 +1,9 @@
 #include "trajectory.h"
 
-void trajectory::generate(int prev_size,nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y, driver &driver,
-                          const vector<lane_state> &lane_score, const vector<double> &velocity_score){
+void trajectory::generate(int prev_size,nlohmann::basic_json<> &previous_path_x,
+                          nlohmann::basic_json<> &previous_path_y, driver &driver, scores &score){
     // calculate trajectory
+    // score.print();
 }
 
 vector<double> trajectory::getNext_x_vals(){

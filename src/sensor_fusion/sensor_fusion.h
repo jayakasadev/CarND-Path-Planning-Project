@@ -7,27 +7,22 @@
 
 #include <vector>
 #include <math.h>
-#include "../utilities/constants.h"
-#include "../utilities/vehicle.h"
-#include "../utilities/json.hpp"
-#include <iostream>
+// #include <iostream>
 #include <algorithm>
 #include <thread>
 #include <map>
+
+#include "../utilities/constants.h"
+#include "../utilities/vehicle.h"
+#include "../utilities/json.hpp"
 
 using namespace std;
 
 class sensor_fusion {
 private:
-
-    void search(int lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver);
-    inline int min_element(float arr[], int size);
-
-    vector<lane_state> lanes;
-    vector<double> velocity;
-    vector<double> distance_front;
-    vector<double> distance_back;
     map<double, other_vehicle> others;
+
+    void search(short lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver, scores &score);
 
     inline static double getSearch_field(int lane, int curr_lane) {
         double field = abs(lane - curr_lane) * search_field + search_field;
@@ -37,25 +32,14 @@ private:
         return search_field_decay * field;
     }
 
+    void setState(short &lane, driver &driver, double &s, double &velocity, short &driver_lane, scores &score);
+
 public:
     sensor_fusion(){}
 
     ~sensor_fusion(){}
 
-    void calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver);
-
-    inline vector<lane_state> getLaneScore(){
-        return lanes;
-    }
-    inline vector<double> getVelocityScore(){
-        return velocity;
-    }
-    inline vector<double> getDistanceFrontScore(){
-        return distance_front;
-    }
-    inline vector<double> getDistanceBackScore(){
-        return distance_back;
-    }
+    void calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver, scores &score);
 };
 
 

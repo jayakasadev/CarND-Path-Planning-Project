@@ -6,6 +6,7 @@
 #define PATH_PLANNING_TRAJECTORY_H
 
 #include <vector>
+#include <iostream>
 #include "../utilities/utilities.h"
 #include "../utilities/map.h"
 #include "../utilities/constants.h"
@@ -29,8 +30,8 @@ public:
 
     ~trajectory(){} // destructor
 
-    void generate(int prev_size, nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y, driver &driver,
-                  const vector<lane_state> &lane_score, const vector<double> &velocity_score);
+    void generate(int prev_size, nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y,
+                  driver &driver, scores &score);
 
     vector<double> getNext_x_vals();
 
