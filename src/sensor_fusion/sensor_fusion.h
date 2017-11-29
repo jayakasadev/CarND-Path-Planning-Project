@@ -25,11 +25,16 @@ private:
 
     vector<lane_state> lanes;
     vector<double> velocity;
-    vector<double> distance;
+    vector<double> distance_front;
+    vector<double> distance_back;
     map<double, other_vehicle> others;
 
-    inline static short search_field(int lane, int curr_lane) {
-        return abs(lane - curr_lane) * 2.5 + 2.5;
+    inline static double getSearch_field(int lane, int curr_lane) {
+        double field = abs(lane - curr_lane) * search_field + search_field;
+        if(lane - curr_lane == 0){
+            return field;
+        }
+        return search_field_decay * field;
     }
 
 public:
@@ -45,8 +50,11 @@ public:
     inline vector<double> getVelocityScore(){
         return velocity;
     }
-    inline vector<double> getDistanceScore(){
-        return distance;
+    inline vector<double> getDistanceFrontScore(){
+        return distance_front;
+    }
+    inline vector<double> getDistanceBackScore(){
+        return distance_back;
     }
 };
 

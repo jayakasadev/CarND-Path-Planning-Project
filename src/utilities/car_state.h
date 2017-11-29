@@ -6,7 +6,7 @@
 #define PATH_PLANNING_CAR_STATE_H
 
 enum turn{
-    TURN_LEFT, STAY, TURN_RIGHT, UNKNOWN
+    TURN_LEFT, STAY, TURN_RIGHT
 };
 
 enum lane_state{

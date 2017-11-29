@@ -21,7 +21,11 @@ const float mph_2_mps = 2.23694;
 
 const short buffer = 5;
 
-const float search_field = 2.5;
+const float search_field = 5;
+
+const float predict_window = 1.0;
+
+const float search_field_decay = 0.85;
 
 const float max_acceleration = 10;
 

@@ -18,12 +18,10 @@ public:
     vehicle(){};
     ~vehicle(){};
 protected:
-
     double x;
     double y;
-
     double yaw;
-    short lane;
+    double d;
 };
 
 class other_vehicle : public vehicle{
@@ -60,25 +58,25 @@ public:
 
         this->x = x;
         this->y = y;
-        lane = (d-2) / 4;
+        this->d = d;
 
         last_Seen = high_resolution_clock::now();
     }
 
     inline short getLane(){
-        return lane;
+        return d / 4;
     }
 
-    inline void predict(double &s, double &d, double &velocity, int prev_size){
+    inline void predict(double &s, double &d, double &velocity){
         // predict the position
-        double px = x + vx * (time_interval * prev_size) + ax * pow(time_interval* prev_size, 2);
-        double py = y + vy * time_interval + ay * pow(time_interval, 2);
+        double px = x + vx * predict_window + ax * pow(predict_window, 2);
+        double py = y + vy * predict_window + ay * pow(predict_window, 2);
         vector<double> vals = mapData.getFrenet(px, py, yaw);
         s = vals[0];
         d = vals[1];
 
-        double pvx = vx + ax * time_interval * prev_size;
-        double pvy = vy + ay * time_interval * prev_size;
+        double pvx = vx + ax * predict_window;
+        double pvy = vy + ay * predict_window;
         velocity = sqrt(pow(pvx, 2) + pow(pvy, 2)); // predict the velocity
     }
 
@@ -114,7 +112,7 @@ public:
 
         this->x = x;
         this->y = y;
-        lane = (d-2) / 4;
+        this->d = d;
 
         this->s = s;
     }
@@ -124,7 +122,7 @@ public:
     }
 
     inline short getLane(){
-        return lane;
+        return d / 4;
     }
 
     inline turn getTurnType(){
@@ -133,6 +131,10 @@ public:
 
     inline double getS(){
         return s;
+    }
+
+    inline double predict(){
+        return s + velocity * time_interval + acceleration * pow(time_interval, 2);
     }
 };
 

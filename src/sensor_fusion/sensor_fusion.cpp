@@ -7,6 +7,7 @@
 // TODO make map threadsafe
 void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver){
     for(int a = 0; a < sensor_fusion.size(); a++){
+        // cout << "driver || s = " << driver.getS() << endl;
         // check if car is in the desired lane
         double d = sensor_fusion[a][6]; // this is the d value for the ath vehicle
         // checking if the car is in the range of my lane
@@ -18,6 +19,7 @@ void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int 
             double vy = sensor_fusion[a][4]; // longitudinal velocity
             double check_speed = sqrt(pow(vx, 2) + pow(vy, 2)); // velocity
             double check_car_s = sensor_fusion[a][5]; // s value of the ath car
+            // if(check_car_s < driver.getS()) cout << id << " || lane = " << lane << " || s = " << check_car_s << " || behind me" << endl;
             // cout << "others: " << others.size() << endl;
             if(others.find(id) != others.end()){
                 // outdated
@@ -36,43 +38,93 @@ void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int 
             }
 
             double pred_s, pred_d, pred_velocity;
-            others.at(id).predict(pred_s, pred_d, pred_velocity, prev_size);
+            others.at(id).predict(pred_s, pred_d, pred_velocity);
+
+            double search_field_buffer = getSearch_field(lane, driver.getLane());
+            double distance_to_target = check_car_s - (driver.getS() + buffer);
 
             // check if it is in the area of interest in its current lane
-            if(abs(check_car_s - (driver.getS() + buffer)) <= search_field(lane, driver.getLane())){
-                lanes[lane] = OBSTRUCTION; // mark lane as obstructed
+            // cout << "search_field_buffer: " << search_field_buffer << endl;
+            // cout << id << " || lane = " << lane << " || s = " << check_car_s << " || me = " << driver.getS() << endl;
+            // cout << "distance: " << distance_to_target << endl;
+            if(abs(distance_to_target) <= search_field_buffer){
+                if(lane == driver.getLane()){
+                    lanes[lane] = FOLLOW;
+                } else {
+                    lanes[lane] = OBSTRUCTION; // mark lane as obstructed
+                }
+            }
+
+            // vehicle is in front of me
+            if(distance_to_target - buffer > 0 && distance_front[lane] > distance_to_target - buffer) {
+                distance_front[lane] = distance_to_target - buffer;
 
                 // only updated if lower than the current speed
                 if(velocity[lane] > check_speed){
                     velocity[lane] = check_speed;
                 }
-                distance[lane] = pred_s - driver.getS();
+            }
+            //vehicle is behind me
+            if(distance_to_target - buffer < 0 && distance_back[lane] < distance_to_target - buffer) {
+                distance_back[lane] = distance_to_target - buffer;
             }
 
-            // check if it is in the area of interest in its future lane
-            if(abs(pred_s - (driver.getS() + buffer)) <= search_field((pred_d/4), driver.getLane())){
-                if(pred_s > driver.getS()){
-                    if((pred_d/4) == driver.getLane()){
-                        lanes[(pred_d/4)] = FOLLOW;
-                    } else {
-                        lanes[(pred_d/4)] = OBSTRUCTION; // mark lane as obstructed
-                    }
-                    distance[(pred_d/4)] = pred_s - driver.getS();
-                }
+            short pred_lane = int(pred_d/4);
+            // going to use the driver's state to predict his future lane
+            short driver_lane = driver.getLane();
 
-                // only updated if lower than the current speed
-                if(velocity[(pred_d/4)] > pred_velocity){
-                    velocity[(pred_d/4)] = pred_velocity;
+            switch (driver.getTurnType()){
+                case TURN_LEFT:
+                    driver_lane--;
+                    break;
+                case TURN_RIGHT:
+                    driver_lane++;
+                    break;
+                default: // stay
+                    break;
+            }
+
+            search_field_buffer = getSearch_field(pred_lane, driver_lane);
+            distance_to_target = pred_s - (driver.predict() + buffer);
+
+            // check if it is in the area of interest in its future lane
+            // cout << "search_field_buffer: " << search_field_buffer << endl;
+            // cout << id << " || pred_lane = " << pred_lane << " || pred_s = " << pred_s << " || me = " << driver.predict() << endl;
+            // cout << "distance: " << distance_to_target << endl;
+            if(abs(distance_to_target) <= search_field_buffer){
+                if(pred_lane == driver_lane){
+                    lanes[pred_lane] = FOLLOW;
+                } else {
+                    lanes[pred_lane] = OBSTRUCTION; // mark lane as obstructed
                 }
+            }
+
+            // vehicle is in front of me
+            if(distance_to_target - buffer > 0 && distance_front[pred_lane] > distance_to_target - buffer) {
+                distance_front[pred_lane] = distance_to_target - buffer;
+                // only updated if lower than the current speed
+                if(velocity[pred_lane] > pred_velocity){
+                    velocity[pred_lane] = pred_velocity;
+                }
+            }
+            //vehicle is behind me
+            if(distance_to_target - buffer < 0 && distance_back[pred_lane] < distance_to_target - buffer) {
+                distance_back[pred_lane] = distance_to_target - buffer;
             }
         }
     }
 }
 
 void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver){
+    lanes.clear();
+    velocity.clear();
+    distance_back.clear();
+    distance_front.clear();
+
     lanes = {OPEN, OPEN, OPEN};
     velocity = {speed_limit, speed_limit, speed_limit};
-    distance = {spacing, spacing, spacing};
+    distance_front = {spacing, spacing, spacing};
+    distance_back = {-spacing, -spacing, -spacing};
 
     /*
     thread lane0([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
@@ -90,9 +142,9 @@ void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &pr
 
     // gonna return when all the threads are done
 
-    cout << "lanes || velocity || distance" << endl;
+    cout << " lane# || lane_state || velocity || distance" << endl;
     for(int a = 0; a < 3; a++){
-        cout << lanes[a] << " || " << velocity[a] << " || " << distance[a] << endl;
+        cout << a << " || " << lanes[a] << " || " << velocity[a] << " || " << distance_front[a] << " || " << distance_back[a] << endl;
     }
 }
 
