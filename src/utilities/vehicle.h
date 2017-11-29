@@ -91,11 +91,12 @@ private:
     double acceleration;
     double s;
     bool first;
+    short desired_lane;
 
     turn turn_type;
 public:
 
-    driver():first(true){}
+    driver():first(true), turn_type(STAY),desired_lane(1){}
     ~driver(){}
 
     inline void updateVehicle(double v_val, double x, double y, double s, double d){
@@ -112,6 +113,7 @@ public:
 
         this->x = x;
         this->y = y;
+
         this->d = d;
 
         this->s = s;
@@ -119,6 +121,14 @@ public:
 
     inline void setTurnType(turn type){
         this->turn_type = type;
+    }
+
+    inline void setDesiredLane(short lane){
+        this->desired_lane = lane;
+    }
+
+    inline short getDesiredLane(){
+        return desired_lane;
     }
 
     inline short getLane(){

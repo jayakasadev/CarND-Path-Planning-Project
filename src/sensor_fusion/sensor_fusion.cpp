@@ -73,15 +73,10 @@ void sensor_fusion::search(int lane, nlohmann::basic_json<> &sensor_fusion, int 
             // going to use the driver's state to predict his future lane
             short driver_lane = driver.getLane();
 
-            switch (driver.getTurnType()){
-                case TURN_LEFT:
-                    driver_lane--;
-                    break;
-                case TURN_RIGHT:
-                    driver_lane++;
-                    break;
-                default: // stay
-                    break;
+            if(driver.getDesiredLane() < driver.getLane()) {
+                driver_lane--;
+            } else if(driver.getDesiredLane() > driver.getLane()) {
+                driver_lane++;
             }
 
             search_field_buffer = getSearch_field(pred_lane, driver_lane);
