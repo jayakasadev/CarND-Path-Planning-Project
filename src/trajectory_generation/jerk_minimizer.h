@@ -21,7 +21,9 @@ private:
     inline double calculateTime(double x, double x_dot, double x_dot_dot, double xf){
         double minus = (-1 * x_dot - sqrt(pow(x_dot, 2) - 4 * x_dot_dot * (x - xf))) / (2 * x_dot_dot);
         double plus = (-1 * x_dot + sqrt(pow(x_dot, 2) - 4 * x_dot_dot * (x - xf))) / (2 * x_dot_dot);
-        return max(minus, plus);
+        if(minus < 0) return plus;
+        if(plus < 0) return minus;
+        return min(plus, minus);
     }
 
     inline bool viabilityCheck();
@@ -39,7 +41,7 @@ public:
 
     double predict(double t, bool s_or_d);
 
-    double cost(short curr_lane, short target_lane, double curr_vel, double target_vel, double curr_s, double target_s, lane_state state);
+    double getCost(short curr_lane, short target_lane, double curr_vel, scores &score);
 
     inline double getS_Time(){
         return s_t;

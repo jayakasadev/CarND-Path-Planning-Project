@@ -25,8 +25,8 @@ private:
     vector<double> velocity;
     vector<double> distance_front;
     vector<double> distance_back;
-public:
 
+public:
     scores(){}
     ~scores(){}
 
@@ -37,18 +37,18 @@ public:
         }
     }
 
-    inline void clear(){
+    inline void setup(){
         lanes.clear();
         velocity.clear();
         distance_back.clear();
         distance_front.clear();
-    }
 
-    inline void setup(){
-        lanes = {OPEN, OPEN, OPEN};
-        velocity = {speed_limit, speed_limit, speed_limit};
-        distance_front = {spacing, spacing, spacing};
-        distance_back = {-spacing, -spacing, -spacing};
+        for(int a = 0; a < total_lanes; a++){
+            lanes.push_back(OPEN);
+            velocity.push_back(speed_limit);
+            distance_front.push_back(spacing);
+            distance_back.push_back(-spacing);
+        }
     }
 
     inline vector<lane_state> getLaneScore(){

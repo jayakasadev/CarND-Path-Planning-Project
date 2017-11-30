@@ -49,7 +49,7 @@ int main() {
     sensor_fusion sensor;
 
     driver vehicle;
-    scores scores;
+    scores scores; // there are 3 lanes at all times
 
     h.onMessage([&vehicle, &ref_vel, &traj, &sensor, &scores](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.

@@ -32,7 +32,7 @@ private:
         return search_field_decay * field;
     }
 
-    void setState(short &lane, driver &driver, double &s, double &velocity, short &driver_lane, scores &score);
+    void setState(short &lane, double driver_s, double &s, double &velocity, short &driver_lane, scores &score);
 
 public:
     sensor_fusion(){}

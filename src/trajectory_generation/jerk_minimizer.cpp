@@ -33,7 +33,10 @@ void jerk_minimizer::calculate(double x, double x_dot, double x_dot_dot, double 
     else // this is d
         d << x, x_dot, x_dot_dot, c[0], c[1], c[2];
 
-    viabilityCheck();
+    // viability check
+    if(s[2] >= max_acceleration) viable = false; // check that acceleration is below 10m/s^2
+    else if(d[3] >= max_jerk) viable = false; // check that jerk is below 50m/s^2
+    else viable = true;
 }
 
 double jerk_minimizer::predict(double t, bool s_or_d) {
@@ -44,21 +47,15 @@ double jerk_minimizer::predict(double t, bool s_or_d) {
     return x.transpose() * d; // else d
 }
 
-inline double jerk_minimizer::cost(short curr_lane, short target_lane, double curr_vel, double target_vel,
-                                   double curr_s, double target_s, lane_state state){
+double jerk_minimizer::getCost(short curr_lane, short target_lane, double curr_vel, scores &score){
     // assuming already viable
-    if(state == OPEN){
-        double slope = -1 + abs(target_lane - curr_lane)/100;
-
-    } else if(state == OBSTRUCTION){
-        return numeric_limits<double>::max();
-    } else{
+    double slope = -1;
+    if(score.getLaneScore(target_lane) == OPEN){
+        slope += abs(target_lane - curr_lane)/100; // changing lanes means slope goes down and cost goes up for similar actions
+    } else if(score.getLaneScore(target_lane) == OBSTRUCTION){
+        return numeric_limits<double>::max(); // no point going further
+    } else {
         // follow
     }
-}
-
-inline bool jerk_minimizer::viabilityCheck(){
-    if(s[2] >= 10) viable = false; // check that acceleration is below 10m/s^2
-    else if(d[3] >= 50) viable = false; // check that jerk is below 50m/s^2
-    else viable = true;
+    return 0;
 }

@@ -23,7 +23,7 @@ void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, in
             // cout << "others: " << others.size() << endl;
             if(others.find(id) != others.end()){
                 // outdated
-                if(others.at(id).updateTime() >= time_diff){
+                if(others.at(id).outDated()){
                     others.at(id).updateVehicle(vx, vy, x, y, d);
                 }
                 else{
@@ -39,7 +39,7 @@ void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, in
 
             short driver_lane = driver.getLane();
 
-            setState(lane, driver, check_car_s, check_speed, driver_lane, score); // state setting for current time
+            setState(lane, driver.getS(), check_car_s, check_speed, driver_lane, score); // state setting for current time
 
             double pred_s, pred_d, pred_velocity;
             others.at(id).predict(pred_s, pred_d, pred_velocity);
@@ -52,13 +52,12 @@ void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, in
                 driver_lane++;
             }
 
-            setState(pred_lane, driver, pred_s, pred_velocity, driver_lane, score); // state setting for 0.02 seconds in future
+            setState(pred_lane, driver.predictS(), pred_s, pred_velocity, driver_lane, score); // state setting for 0.02 seconds in future
         }
     }
 }
 
 void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver, scores &score){
-    score.clear();
     score.setup();
     /*
     thread lane0([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
@@ -78,9 +77,9 @@ void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &pr
     // score.print();
 }
 
-void sensor_fusion::setState(short &lane, driver &driver, double &s, double &velocity, short &driver_lane, scores &score){
+void sensor_fusion::setState(short &lane, double driver_s, double &s, double &velocity, short &driver_lane, scores &score){
     double search_field_buffer = getSearch_field(lane, driver_lane);
-    double distance_to_target = s - (driver.getS() + buffer);
+    double distance_to_target = s - (driver_s + buffer);
 
     // check if it is in the area of interest in its current lane
     // cout << "search_field_buffer: " << search_field_buffer << endl;

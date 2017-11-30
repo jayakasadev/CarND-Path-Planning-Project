@@ -6,6 +6,8 @@
 // The max s value before wrapping around the track back to 0
 const double max_s = 6945.554;
 
+const short total_lanes = 3;
+
 // fixed speed limit
 const double speed_limit = 49.99;
 

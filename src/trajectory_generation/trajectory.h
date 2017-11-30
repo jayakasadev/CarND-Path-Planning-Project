@@ -21,12 +21,32 @@ class trajectory {
 private:
     vector<double> next_x_vals;
     vector<double> next_y_vals;
-    jerk_minimizer lane0;
-    jerk_minimizer lane1;
-    jerk_minimizer lane2;
+    vector<jerk_minimizer> minimizers;
+    vector<double> costs;
+
+    inline void resetScores(){
+        costs.clear();
+        for(short a = 0; a < total_lanes; a++){
+            costs.push_back(numeric_limits<double>::max());
+        }
+    }
+
+    inline void printScores(){
+        for(short a = 0; a < total_lanes; a++){
+            cout << "lane: " << a << " || score: " << costs[a] << "\t";
+        }
+        cout << endl;
+    }
+
+    void calculate(driver &driver, scores &score, short &lane);
 
 public:
-    trajectory(){} // constructor
+    trajectory(){
+        for(short a = 0; a < total_lanes; a++){
+            minimizers.push_back(jerk_minimizer());
+            costs.push_back(numeric_limits<double>::max());
+        }
+    } // constructor
 
     ~trajectory(){} // destructor
 
@@ -36,6 +56,7 @@ public:
     vector<double> getNext_x_vals();
 
     vector<double> getNext_y_vals();
+
 
 
 };

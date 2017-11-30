@@ -17,6 +17,10 @@ class vehicle{
 public:
     vehicle(){};
     ~vehicle(){};
+
+    inline double getD(){
+        return d;
+    }
 protected:
     double x;
     double y;
@@ -33,6 +37,10 @@ private:
     bool first;
 
     high_resolution_clock::time_point last_Seen;
+
+    inline long updateTime(){
+        return (high_resolution_clock::now() - last_Seen).count();
+    }
 
 public:
     other_vehicle(){
@@ -80,15 +88,21 @@ public:
         velocity = sqrt(pow(pvx, 2) + pow(pvy, 2)); // predict the velocity
     }
 
-    inline long updateTime(){
-        return (high_resolution_clock::now() - last_Seen).count();
+    inline bool outDated(){
+        if(updateTime() >= time_diff){
+            first = true;
+            return true;
+        }
+        return false;
     }
 };
 
 class driver : public vehicle{
 private:
-    double velocity;
-    double acceleration;
+    double velocity_d;
+    double velocity_s;
+    double acceleration_s;
+    double acceleration_d;
     double s;
     bool first;
     short desired_lane;
@@ -101,13 +115,18 @@ public:
 
     inline void updateVehicle(double v_val, double x, double y, double s, double d){
         if(!first){
-            this->acceleration = (v_val - this->velocity) / time_interval; // calculate acceleration
+            this->acceleration_s = (v_val - this->velocity_s) / time_interval; // calculate acceleration
+
+            double vel_d = (d - this->d) / time_interval;
+            this->acceleration_d = (vel_d - velocity_d) / time_interval;
+            this->velocity_d = vel_d;
         } else {
-            this->acceleration = 0;
+            this->acceleration_s = acceleration_d = 0;
+            velocity_d = 0;
             first = false;
         }
 
-        this->velocity = v_val; // set velocity
+        this->velocity_s = v_val; // set velocity
 
         yaw = mapData.getYaw(y, this->y, x, this->x);
 
@@ -139,12 +158,32 @@ public:
         return turn_type;
     }
 
-    inline double getS(){
+    inline double & getS(){
         return s;
     }
 
-    inline double predict(){
-        return s + velocity * time_interval + acceleration * pow(time_interval, 2);
+    inline double getVelocityS(){
+        return velocity_s;
+    }
+
+    inline double getVelocityD(){
+        return velocity_d;
+    }
+
+    inline double getAccelerationS(){
+        return acceleration_s;
+    }
+
+    inline double getAccelerationD(){
+        return acceleration_d;
+    }
+
+    inline double predictS(){
+        return s + velocity_s * time_interval + acceleration_s * pow(time_interval, 2);
+    }
+
+    inline double predictD(){
+        return d + velocity_d * time_interval + acceleration_d * pow(time_interval, 2);
     }
 };
 
