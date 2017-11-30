@@ -41,7 +41,7 @@ void jerk_minimizer::calculate(double x, double x_dot, double x_dot_dot, double 
 
 double jerk_minimizer::predict(double t, bool s_or_d) {
     VectorXd x(6);
-    x << 1.0, time_period, pow(t, 2), pow(t, 3), pow(t, 4), pow(t, 5);
+    x << 1.0, t, pow(t, 2), pow(t, 3), pow(t, 4), pow(t, 5);
     if(s_or_d) // this is s
         return x.transpose() * s;
     return x.transpose() * d; // else d
@@ -51,11 +51,12 @@ double jerk_minimizer::getCost(short curr_lane, short target_lane, double curr_v
     // assuming already viable
     double slope = -1;
     if(score.getLaneScore(target_lane) == OPEN){
-        slope += abs(target_lane - curr_lane)/100; // changing lanes means slope goes down and cost goes up for similar actions
+        slope += abs(target_lane - curr_lane)/70; // changing lanes means slope goes down and cost goes up for similar actions
     } else if(score.getLaneScore(target_lane) == OBSTRUCTION){
         return numeric_limits<double>::max(); // no point going further
     } else {
         // follow
+        slope += 1/100; // slight
     }
     return 0;
 }

@@ -17,7 +17,7 @@ const float speed_adjust_rate = .224;
 
 const float time_interval = .02;
 
-const float time_period = 2.0;
+const float time_period = 1.0;
 
 const float mph_2_mps = 2.23694;
 
