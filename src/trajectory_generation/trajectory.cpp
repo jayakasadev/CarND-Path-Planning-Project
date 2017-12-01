@@ -25,8 +25,8 @@ void trajectory::generate(driver &driver, scores &score, map_data &mapData) {
         double s = minimizers[index].predict(a * time_interval, true);
         double d = minimizers[index].predict(a * time_interval, false);
         vector<double> xy = mapData.getXY(s, d);
-        cout << "s: " << s << " || d: " << d << " time = " << a * time_interval << endl;
-        cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
+        // cout << "s: " << s << " || d: " << d << " time = " << a * time_interval << endl;
+        // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
         next_x_vals.push_back(xy[0]);
         next_y_vals.push_back(xy[1]);
     }

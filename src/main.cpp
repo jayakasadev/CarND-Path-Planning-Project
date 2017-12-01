@@ -157,7 +157,7 @@ int main() {
                     // we want the car to drive in a single lane and smoothly at a constant velocity
 
                     // working on sensor fusion here to avoid obstacles
-                    /*
+
                     if(prev_size > 0){
                         // if i have any previous path points. going to change my current s so that it is actually
                         // representative of the previous path last point's s
@@ -167,25 +167,21 @@ int main() {
                     else{
                         vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d, mapData);
                     }
-                    */
-                    if(first){
-                        vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d, mapData);
+                    // vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d, mapData);
 
                         // bool too_close = false;
                         // double speed = speed_limit;
 
-                        sensor.calculateCost(sensor_fusion, vehicle, scores, mapData);
+                    sensor.calculateCost(sensor_fusion, vehicle, scores, mapData);
 
                         // gotta change lanes
                         // lane = sensor.getLane();
 
-                        // vector<double> xy = mapData.getXY(vehicle.getS(), vehicle.getD());
-                        // cout << "DRIVER:  || s: " << vehicle.getS() << " || d: " << vehicle.getD() << endl;
-                        // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
+                    // vector<double> xy = mapData.getXY(vehicle.getS(), vehicle.getD());
+                    cout << "DRIVER:  || s: " << vehicle.getS() << " || d: " << vehicle.getD() << " || s-dot: " << vehicle.getVelocityS() << " || d-dot: " << vehicle.getVelocityD() << endl;
+                    // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
 
-                        traj.generate(vehicle, scores, mapData);
-                        first = false;
-                    }
+                    traj.generate(vehicle, scores, mapData);
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();
