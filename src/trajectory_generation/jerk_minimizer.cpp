@@ -5,58 +5,71 @@
 #include "jerk_minimizer.h"
 
 void jerk_minimizer::calculate(double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, bool s_or_d){
-    MatrixXd A(3,3);
-    VectorXd b(3);
-    VectorXd c(3);
+    /*
+    if(s_or_d)
+        cout << "CALCULATE S: " << endl;
+    else
+        cout << "CALCULATE D: " << endl;
+    cout << "\tx: " << x << " || x_dot: " << x_dot << " || x_dot_dot: " << x_dot_dot << endl;
+    cout << "\txf: " << xf << " || xf_dot: " << xf_dot << " || xf_dot_dot: " << xf_dot_dot << endl;
+     */
 
-    double t = calculateTime(x, x_dot, x_dot_dot, xf);
-    if(s_or_d) s_t = t;
-    else d_t = t;
+    if(s_or_d) time = calculateTime(x, xf, x_dot, xf_dot);
+    else xf_dot = calculateFinalVelocity(x, xf, x_dot, time);
+
+    // cout << "time: " << time << endl;
+
+    MatrixXd A(3, 3);
 
     // cout << "trajectory constructor"  << endl;
-    A << pow(t, 3), pow(t, 4), pow(t, 5),
-            3 * pow(t, 2), 4 *pow(t, 3), 5 * pow(t, 4),
-            6 * t, 12 * pow(t, 2), 20 * pow(t, 3);
+    A << pow(time, 3), pow(time, 4), pow(time, 5),
+            3 * pow(time, 2), 4 *pow(time, 3), 5 * pow(time, 4),
+            6 * time, 12 * pow(time, 2), 20 * pow(time, 3);
 
-    // cout << A << endl;
+    // cout << "temp: " << temp << endl;
 
     A = A.inverse();
-    // cout << t << endl;
+    // cout << "A^-1: " << A << endl;
 
-    b << (xf - (x + x_dot * t + 0.5 * x_dot_dot * pow(t, 2))),
-            (xf_dot - (x_dot + x_dot_dot * t)),
+    VectorXd b(3);
+
+    b << (xf - (x + x_dot * time + 0.5 * x_dot_dot * pow(time, 2))),
+            (xf_dot - (x_dot + x_dot_dot * time)),
             (xf_dot_dot - x_dot_dot);
 
-    c = A * b;
-    if(s_or_d) // this is s
-        s << x, x_dot, x_dot_dot, c[0], c[1], c[2];
-    else // this is d
-        d << x, x_dot, x_dot_dot, c[0], c[1], c[2];
+    // cout << "b: " << b.transpose() << endl;
 
-    // viability check
-    if(s[2] >= max_acceleration) viable = false; // check that acceleration is below 10m/s^2
-    else if(d[3] >= max_jerk) viable = false; // check that jerk is below 50m/s^2
-    else viable = true;
+    VectorXd c = A * b;
+    // cout << "c: " << c << endl;
+    if(s_or_d){
+        // this is s
+        s << x, x_dot, x_dot_dot, c[0], c[1], c[2];
+        cout << "s: "<< s.transpose() << endl;
+        // viability check
+        if(abs(s[2]) >= max_acceleration) viable = false; // check that acceleration is below  +/- 10m/s^2
+        else if(abs(s[3]) >= max_jerk) viable = false; // check that jerk is below +/- 50m/s^2
+    } else {
+        // this is d
+        d << x, x_dot, x_dot_dot, c[0], c[1], c[2];
+        cout << "d: "<< d.transpose() << endl;
+        // viability check
+        if(abs(d[2]) >= max_acceleration) viable = false; // check that acceleration is below  +/- 10m/s^2
+        else if(abs(d[3]) >= max_jerk) viable = false; // check that jerk is below +/- 50m/s^2
+    }
 }
 
 double jerk_minimizer::predict(double t, bool s_or_d) {
+    // cout << "PREDICT: ";
     VectorXd x(6);
     x << 1.0, t, pow(t, 2), pow(t, 3), pow(t, 4), pow(t, 5);
-    if(s_or_d) // this is s
-        return x.transpose() * s;
-    return x.transpose() * d; // else d
-}
-
-double jerk_minimizer::getCost(short curr_lane, short target_lane, double curr_vel, scores &score){
-    // assuming already viable
-    double slope = -1;
-    if(score.getLaneScore(target_lane) == OPEN){
-        slope += abs(target_lane - curr_lane)/70; // changing lanes means slope goes down and cost goes up for similar actions
-    } else if(score.getLaneScore(target_lane) == OBSTRUCTION){
-        return numeric_limits<double>::max(); // no point going further
+    double out = 0;
+    if(s_or_d){
+        // this is s
+        out = x.transpose() * s;
+        // cout << "s: "<< out << endl;
     } else {
-        // follow
-        slope += 1/100; // slight
+        out = x.transpose() * d; // else d
+        // cout << "d: "<< out << endl;
     }
-    return 0;
+    return out;
 }

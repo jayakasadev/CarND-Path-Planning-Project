@@ -22,7 +22,7 @@ class sensor_fusion {
 private:
     map<double, other_vehicle> others;
 
-    void search(short lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver, scores &score);
+    void search(short lane, nlohmann::basic_json<> &sensor_fusion, driver &driver, scores &score, map_data &mapData);
 
     inline static double getSearch_field(int lane, int curr_lane) {
         double field = abs(lane - curr_lane) * search_field + search_field;
@@ -39,7 +39,7 @@ public:
 
     ~sensor_fusion(){}
 
-    void calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver, scores &score);
+    void calculateCost(nlohmann::basic_json<> &sensor_fusion, driver &driver, scores &score, map_data &mapData);
 };
 
 

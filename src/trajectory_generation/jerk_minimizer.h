@@ -14,25 +14,26 @@ class jerk_minimizer {
 private:
     VectorXd d;
     VectorXd s;
-    double s_t;
-    double d_t;
     bool viable;
+    double time;
 
-    inline double calculateTime(double x, double x_dot, double x_dot_dot, double xf){
-        double minus = (-1 * x_dot - sqrt(pow(x_dot, 2) - 4 * x_dot_dot * (x - xf))) / (2 * x_dot_dot);
-        double plus = (-1 * x_dot + sqrt(pow(x_dot, 2) - 4 * x_dot_dot * (x - xf))) / (2 * x_dot_dot);
-        if(minus < 0) return plus;
-        if(plus < 0) return minus;
-        return min(plus, minus);
+    inline double calculateTime(double x, double xf, double x_dot, double xf_dot){
+        // cout << "calculateTime: " << endl;
+        // cout << "xf: " << xf << " xf_dot: " << xf_dot << endl;
+        return ((xf - x) * 2) / (xf_dot + x_dot);
     }
 
-    inline bool viabilityCheck();
+    inline double calculateFinalVelocity(double x, double xf, double x_dot, double t){
+        return ((xf - x) * 2) / t - x_dot;
+    }
 
 public:
 
     jerk_minimizer(){
         s = VectorXd(6);
         d = VectorXd(6);
+
+        viable = true;
     }
 
     ~jerk_minimizer(){}
@@ -41,18 +42,42 @@ public:
 
     double predict(double t, bool s_or_d);
 
-    double getCost(short curr_lane, short target_lane, double curr_vel, scores &score);
+    inline double getCost(short curr_lane, short target_lane, double curr_vel, scores &score){
+        // cout << "COST FUNCTION: " << endl;
+        // cout << "curr_lane: " << curr_lane << " || target_lane: " << target_lane << " || curr_vel: " << curr_vel << endl;
+        // assuming already viable
+        if(score.getLaneScore(target_lane) == OBSTRUCTION){
+            return 1; // no point going further
+        }
+        double d_lane= (abs(target_lane - curr_lane) / double(total_lanes));
+        double available_space = ((2 * spacing - (score.getDistanceFrontScore(target_lane) - score.getDistanceBackScore(target_lane))) / (2 * spacing));
+        double d_s = ((spacing - score.getDistanceFrontScore(target_lane)) / spacing);
+        double d_v = ((speed_limit - (score.getVelocityScore(target_lane) - curr_vel)) / (2 * speed_limit));
 
-    inline double getS_Time(){
-        return s_t;
-    }
+        // cout << "d_lane: " << d_lane << " || available_space: " << available_space << " || d_s: " << d_s << " || d_v: " << d_v << endl;
 
-    inline double getD_Time(){
-        return d_t;
+        if(curr_lane == target_lane){
+            // cout << "cost = " << ((d_lane + d_s + d_v) / 3.0) << endl;
+            return ((d_lane + d_s + d_v) / 3.0);
+        }
+        // cout << "cost = " << ((d_lane + d_s + d_v + available_space) / 4.0) << endl;
+        return ((d_lane + d_s + d_v + available_space) / 4.0);
     }
 
     inline bool getViability(){
+        /*
+        if(viable){
+            cout << "Viable" << endl;
+        } else {
+            cout << "NOT Viable" << endl;
+        }
+         */
+
         return viable;
+    }
+
+    inline void resetViability(){
+        viable = true;
     }
 };
 

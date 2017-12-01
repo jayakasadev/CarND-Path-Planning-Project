@@ -16,7 +16,7 @@ enum turn{
 };
 
 enum lane_state{
-    OPEN, OBSTRUCTION, FOLLOW
+    OPEN, FOLLOW, OBSTRUCTION
 };
 
 class scores{
@@ -31,9 +31,10 @@ public:
     ~scores(){}
 
     void print(){
+        cout << "MEASURES: " << endl;
         cout << " lane# || lane_state || velocity || distance" << endl;
         for(int a = 0; a < 3; a++){
-            cout << a << " || " << lanes[a] << " || " << velocity[a] << " || " << distance_front[a] << " || " << distance_back[a] << endl;
+            cout << "\t" << a << " || " << lanes[a] << " || " << velocity[a] << " || " << distance_front[a] << " || " << distance_back[a] << endl;
         }
     }
 

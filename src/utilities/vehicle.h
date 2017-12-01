@@ -49,7 +49,7 @@ public:
     };
     ~other_vehicle(){};
 
-    inline void updateVehicle(double vx_val, double vy_val, double x, double y, double d){
+    inline void updateVehicle(double vx_val, double vy_val, double x, double y, double d, map_data &mapData){
         if(!first){
             this->ax = (vx_val - this->vx) / time_interval; // calculate acceleration
             this->ay = (vy_val - this->vy) / time_interval; // calculate acceleration
@@ -75,7 +75,7 @@ public:
         return d / 4;
     }
 
-    inline void predict(double &s, double &d, double &velocity){
+    inline void predict(double &s, double &d, double &velocity, map_data &mapData){
         // predict the position
         double px = x + vx * predict_window + ax * pow(predict_window, 2);
         double py = y + vy * predict_window + ay * pow(predict_window, 2);
@@ -113,7 +113,7 @@ public:
     driver():first(true), turn_type(STAY),desired_lane(1){}
     ~driver(){}
 
-    inline void updateVehicle(double v_val, double x, double y, double s, double d){
+    inline void updateVehicle(double v_val, double x, double y, double s, double d, map_data &mapData){
         if(!first){
             this->acceleration_s = (v_val - this->velocity_s) / time_interval; // calculate acceleration
 

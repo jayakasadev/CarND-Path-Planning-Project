@@ -9,6 +9,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -21,12 +22,29 @@ public:
     vector<double> map_waypoints_dx;
     vector<double> map_waypoints_dy;
 
-    static map_data& getInstance(){
-        static map_data map;
-        return map;
-    }
+    map_data(){
+        std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
 
-    void operator=(map_data const&) = delete;
+        std::string line;
+        while (getline(in_map_, line)) {
+            std::istringstream iss(line);
+            double x;
+            double y;
+            float s;
+            float d_x;
+            float d_y;
+            iss >> x;
+            iss >> y;
+            iss >> s;
+            iss >> d_x;
+            iss >> d_y;
+            map_waypoints_x.push_back(x);
+            map_waypoints_y.push_back(y);
+            map_waypoints_s.push_back(s);
+            map_waypoints_dx.push_back(d_x);
+            map_waypoints_dy.push_back(d_y);
+        }
+    }
 
     // For converting back and forth between radians and degrees.
     static inline constexpr double pi() { return M_PI; }
@@ -152,7 +170,7 @@ public:
     }
 
     // Transform from Frenet s,d coordinates to Cartesian x,y
-    vector<double> getXY(double s, double d) {
+    vector<double> getXY(double s, double d)const {
         int prev_wp = -1;
 
         while(s > map_waypoints_s[prev_wp+1] && (prev_wp < (int)(map_waypoints_s.size()-1) )){
@@ -173,6 +191,8 @@ public:
         double x = seg_x + d*cos(perp_heading);
         double y = seg_y + d*sin(perp_heading);
 
+        // cout << "x: " << x << " || y: " << y << endl;
+
         return {x,y};
 
     }
@@ -184,29 +204,6 @@ public:
 private:
     // Waypoint map to read from
     const std::string map_file_ = "../data/highway_map.csv";
-    map_data(){
-        std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
-
-        std::string line;
-        while (getline(in_map_, line)) {
-            std::istringstream iss(line);
-            double x;
-            double y;
-            float s;
-            float d_x;
-            float d_y;
-            iss >> x;
-            iss >> y;
-            iss >> s;
-            iss >> d_x;
-            iss >> d_y;
-            map_waypoints_x.push_back(x);
-            map_waypoints_y.push_back(y);
-            map_waypoints_s.push_back(s);
-            map_waypoints_dx.push_back(d_x);
-            map_waypoints_dy.push_back(d_y);
-        }
-    }
 };
 
 

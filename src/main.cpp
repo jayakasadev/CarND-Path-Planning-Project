@@ -42,7 +42,6 @@ int main() {
     // short lane = 1; // lane 0 is far left, lane 2 is far right
 
     // reference velocity to target
-    double ref_vel = 0.0; // start from 0.0 mph and incrementally speed up instead of instantly jumping to 50mph
 
     // trajectory generator
     trajectory traj;
@@ -51,7 +50,10 @@ int main() {
     driver vehicle;
     scores scores; // there are 3 lanes at all times
 
-    h.onMessage([&vehicle, &ref_vel, &traj, &sensor, &scores](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    map_data mapData;
+    bool first = true;
+
+    h.onMessage([&vehicle, &mapData, &traj, &sensor, &scores, &first](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -155,25 +157,35 @@ int main() {
                     // we want the car to drive in a single lane and smoothly at a constant velocity
 
                     // working on sensor fusion here to avoid obstacles
+                    /*
                     if(prev_size > 0){
                         // if i have any previous path points. going to change my current s so that it is actually
                         // representative of the previous path last point's s
                         // done in frenet because it simplifies the logic
-                        vehicle.updateVehicle(car_speed, car_x, car_y, end_path_s, car_d);
+                        vehicle.updateVehicle(car_speed, car_x, car_y, end_path_s, car_d, mapData);
                     }
                     else{
-                        vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d);
+                        vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d, mapData);
                     }
+                    */
+                    if(first){
+                        vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d, mapData);
 
-                    // bool too_close = false;
-                    // double speed = speed_limit;
+                        // bool too_close = false;
+                        // double speed = speed_limit;
 
-                    sensor.calculateCost(sensor_fusion, prev_size, vehicle, scores);
+                        sensor.calculateCost(sensor_fusion, vehicle, scores, mapData);
 
-                    // gotta change lanes
-                    // lane = sensor.getLane();
+                        // gotta change lanes
+                        // lane = sensor.getLane();
 
-                    traj.generate(prev_size, previous_path_x, previous_path_y, vehicle, scores);
+                        // vector<double> xy = mapData.getXY(vehicle.getS(), vehicle.getD());
+                        // cout << "DRIVER:  || s: " << vehicle.getS() << " || d: " << vehicle.getD() << endl;
+                        // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
+
+                        traj.generate(vehicle, scores, mapData);
+                        first = false;
+                    }
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();

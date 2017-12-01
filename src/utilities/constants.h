@@ -13,6 +13,8 @@ const double speed_limit = 49.99;
 
 const short spacing = 30; // spacing in m between s way points
 
+const double follow_buffer = 10;
+
 const float speed_adjust_rate = .224;
 
 const float time_interval = .02;
@@ -36,7 +38,5 @@ const float max_jerk = 50;
 const int num_points = time_period / time_interval;
 
 const long time_diff = 5000; // if i do not see a vehicle for more than 5 seconds I forget about it
-
-const map_data mapData = map_data::getInstance();
 
 #endif //CONSTANTS_H

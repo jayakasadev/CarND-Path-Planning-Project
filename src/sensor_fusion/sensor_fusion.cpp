@@ -5,7 +5,7 @@
 #include "sensor_fusion.h"
 
 // TODO make map threadsafe
-void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, int prev_size, driver &driver, scores &score){
+void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, driver &driver, scores &score, map_data &mapData){
     for(int a = 0; a < sensor_fusion.size(); a++){
         // cout << "driver || s = " << driver.getS() << endl;
         // check if car is in the desired lane
@@ -24,15 +24,15 @@ void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, in
             if(others.find(id) != others.end()){
                 // outdated
                 if(others.at(id).outDated()){
-                    others.at(id).updateVehicle(vx, vy, x, y, d);
+                    others.at(id).updateVehicle(vx, vy, x, y, d, mapData);
                 }
                 else{
                     // recent and valid
-                    others.at(id).updateVehicle(vx, vy, x, y, d);
+                    others.at(id).updateVehicle(vx, vy, x, y, d, mapData);
                 }
             } else{
                 other_vehicle otherVehicle;
-                otherVehicle.updateVehicle(vx, vy, x, y, d);
+                otherVehicle.updateVehicle(vx, vy, x, y, d, mapData);
                 others[id] = otherVehicle;
 
             }
@@ -42,7 +42,7 @@ void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, in
             setState(lane, driver.getS(), check_car_s, check_speed, driver_lane, score); // state setting for current time
 
             double pred_s, pred_d, pred_velocity;
-            others.at(id).predict(pred_s, pred_d, pred_velocity);
+            others.at(id).predict(pred_s, pred_d, pred_velocity, mapData);
 
             short pred_lane = int(pred_d/4);
             // going to use the driver's state to predict his future lane
@@ -57,7 +57,7 @@ void sensor_fusion::search(short lane, nlohmann::basic_json<> &sensor_fusion, in
     }
 }
 
-void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &prev_size, driver &driver, scores &score){
+void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, driver &driver, scores &score, map_data &mapData){
     score.setup();
     /*
     thread lane0([this, &sensor_fusion, &prev_size, &driver]{ this->search(0, sensor_fusion, prev_size, driver); });
@@ -69,9 +69,9 @@ void sensor_fusion::calculateCost(nlohmann::basic_json<> &sensor_fusion, int &pr
     lane2.join();
      */
 
-    search(0, sensor_fusion, prev_size, driver, score);
-    search(1, sensor_fusion, prev_size, driver, score);
-    search(2, sensor_fusion, prev_size, driver, score);
+    search(0, sensor_fusion, driver, score, mapData);
+    search(1, sensor_fusion, driver, score, mapData);
+    search(2, sensor_fusion, driver, score, mapData);
 
     // gonna return when all the threads are done
     // score.print();
@@ -86,11 +86,11 @@ void sensor_fusion::setState(short &lane, double driver_s, double &s, double &ve
     // cout << id << " || lane = " << lane << " || s = " << check_car_s << " || me = " << driver.getS() << endl;
     // cout << "distance: " << distance_to_target << endl;
     if(abs(distance_to_target) <= search_field_buffer){
-        if(lane == driver_lane){
-            score.setLaneFollow(lane);
-        } else {
-            score.setLaneObstructed(lane);// mark lane as obstructed
-        }
+        score.setLaneObstructed(lane);// mark lane as obstructed
+    }
+    // if the vehicle is 10m away in the current lane, follow it
+    if(lane == driver_lane && abs(distance_to_target) <= follow_buffer + search_field_buffer && abs(distance_to_target) > search_field_buffer){
+        score.setLaneFollow(lane);
     }
 
     // vehicle is in front of me
