@@ -4,20 +4,17 @@
 
 #include "jerk_minimizer.h"
 
-void jerk_minimizer::calculate(double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, bool s_or_d){
-    /*
+void jerk_minimizer::calculate(double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, double time, bool s_or_d){
+
     if(s_or_d)
-        cout << "CALCULATE S: " << endl;
+        cout << "\tjerk_minimizer::calculate S: " << endl;
     else
-        cout << "CALCULATE D: " << endl;
-    cout << "\tx: " << x << " || x_dot: " << x_dot << " || x_dot_dot: " << x_dot_dot << endl;
-    cout << "\txf: " << xf << " || xf_dot: " << xf_dot << " || xf_dot_dot: " << xf_dot_dot << endl;
-     */
+        cout << "\tjerk_minimizer::calculate D: " << endl;
 
-    if(s_or_d) time = calculateTime(x, xf, x_dot, xf_dot);
-    else xf_dot = calculateFinalVelocity(x, xf, x_dot, time);
-
+    // cout << "\t\tx: " << x << " || x_dot: " << x_dot << " || x_dot_dot: " << x_dot_dot << endl;
+    // cout << "\t\txf: " << xf << " || xf_dot: " << xf_dot << " || xf_dot_dot: " << xf_dot_dot << endl;
     // cout << "time: " << time << endl;
+
 
     MatrixXd A(3, 3);
 
@@ -44,14 +41,14 @@ void jerk_minimizer::calculate(double x, double x_dot, double x_dot_dot, double 
     if(s_or_d){
         // this is s
         s << x, x_dot, x_dot_dot, c[0], c[1], c[2];
-        cout << "s: "<< s.transpose() << endl;
+        cout << "\t\ts: "<< s.transpose() << endl;
         // viability check
         if(abs(s[2]) >= max_acceleration) viable = false; // check that acceleration is below  +/- 10m/s^2
         else if(abs(s[3]) >= max_jerk) viable = false; // check that jerk is below +/- 50m/s^2
     } else {
         // this is d
         d << x, x_dot, x_dot_dot, c[0], c[1], c[2];
-        cout << "d: "<< d.transpose() << endl;
+        cout << "\t\td: "<< d.transpose() << endl;
         // viability check
         if(abs(d[2]) >= max_acceleration) viable = false; // check that acceleration is below  +/- 10m/s^2
         else if(abs(d[3]) >= max_jerk) viable = false; // check that jerk is below +/- 50m/s^2

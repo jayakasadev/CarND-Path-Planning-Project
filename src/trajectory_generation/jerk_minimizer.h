@@ -14,18 +14,8 @@ class jerk_minimizer {
 private:
     VectorXd d;
     VectorXd s;
+
     bool viable;
-    double time;
-
-    inline double calculateTime(double x, double xf, double x_dot, double xf_dot){
-        // cout << "calculateTime: " << endl;
-        // cout << "xf: " << xf << " xf_dot: " << xf_dot << endl;
-        return ((xf - x) * 2) / (xf_dot + x_dot);
-    }
-
-    inline double calculateFinalVelocity(double x, double xf, double x_dot, double t){
-        return ((xf - x) * 2) / t - x_dot;
-    }
 
 public:
 
@@ -38,7 +28,7 @@ public:
 
     ~jerk_minimizer(){}
 
-    void calculate(double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, bool s_or_d);
+    void calculate(double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, double time, bool s_or_d);
 
     double predict(double t, bool s_or_d);
 

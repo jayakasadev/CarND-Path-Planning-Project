@@ -169,19 +169,22 @@ int main() {
                     }
                     // vehicle.updateVehicle(car_speed, car_x, car_y, car_s, car_d, mapData);
 
-                        // bool too_close = false;
-                        // double speed = speed_limit;
+                    // bool too_close = false;
+                    // double speed = speed_limit;
 
-                    sensor.calculateCost(sensor_fusion, vehicle, scores, mapData);
+                    if(first){
+                        sensor.calculateCost(sensor_fusion, vehicle, scores, mapData);
 
                         // gotta change lanes
                         // lane = sensor.getLane();
 
-                    // vector<double> xy = mapData.getXY(vehicle.getS(), vehicle.getD());
-                    cout << "DRIVER:  || s: " << vehicle.getS() << " || d: " << vehicle.getD() << " || s-dot: " << vehicle.getVelocityS() << " || d-dot: " << vehicle.getVelocityD() << endl;
-                    // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
+                        // vector<double> xy = mapData.getXY(vehicle.getS(), vehicle.getD());
+                        // cout << "DRIVER:  || s: " << vehicle.getS() << " || d: " << vehicle.getD() << " || s-dot: " << vehicle.getVelocityS() << " || d-dot: " << vehicle.getVelocityD() << endl;
+                        // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
 
-                    traj.generate(vehicle, scores, mapData);
+                        traj.generate(vehicle, scores, mapData);
+                        first = false;
+                    }
 
                     msgJson["next_x"] = traj.getNext_x_vals();
                     msgJson["next_y"] = traj.getNext_y_vals();

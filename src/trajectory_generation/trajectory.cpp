@@ -33,13 +33,31 @@ void trajectory::generate(driver &driver, scores &score, map_data &mapData) {
 }
 
 void trajectory::calculate(driver &driver, scores &score, short &lane){
-    cout << "CALCULATE: " << endl;
+    cout << "trajectory::calculate: " << endl;
     minimizers[lane].resetViability();
+
     // go through each lane
     // cancel out the obvious bad lanes
-    if(score.getLaneScore(lane) != OBSTRUCTION){
-        minimizers[lane].calculate(driver.getS(), driver.getVelocityS(), driver.getAccelerationS(), driver.getS() + score.getDistanceFrontScore(lane), score.getVelocityScore(lane), 0, true); // s
-        minimizers[lane].calculate(driver.getD(), driver.getVelocityD(), driver.getAccelerationD(), lane * 4 + 2, 0, 0, false); // d
+    // if something is obstructing the current lane, predict for it too in case we want to avoid a collision
+    if(score.getLaneScore(lane) != OBSTRUCTION || driver.getLane() == lane){
+        double time = double(time_period);
+        double d_x = score.getDistanceFrontScore(lane);
+        double x = driver.getS();
+        double xf = fmod(x + d_x, max_s); // keep from going off map
+        double x_dot = driver.getVelocityS();
+        double xf_dot = score.getVelocityScore(lane);
+        double x_dot_dot = driver.getAccelerationS();
+        calculateTimeS(x_dot, x_dot_dot, xf_dot, time);
+
+        minimizers[lane].calculate(x, x_dot, x_dot_dot, xf, xf_dot, 0, time, true); // s
+
+        x = driver.getD();
+        x_dot = driver.getVelocityD();
+        x_dot_dot = driver.getAccelerationD();
+        xf = fmod(lane * 4 + 2, total_lanes * 4); // keep from going off map
+        xf_dot = 0;
+        calculateTimeD(x, xf, x_dot, x_dot_dot, xf_dot, time);
+        minimizers[lane].calculate(x, x_dot, x_dot_dot, xf, xf_dot, 0, time, false); // d
         // if the lane is viable
         if(minimizers[lane].getViability()){
             costs[lane] = minimizers[lane].getCost(driver.getLane(), lane, driver.getVelocityS(), score);

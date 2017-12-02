@@ -103,6 +103,8 @@ private:
     double velocity_s;
     double acceleration_s;
     double acceleration_d;
+    double jerk_s;
+    double jerk_d;
     double s;
     bool first;
     short desired_lane;
@@ -114,14 +116,22 @@ public:
     ~driver(){}
 
     inline void updateVehicle(double v_val, double x, double y, double s, double d, map_data &mapData){
+        v_val = mph_2_mps * v_val;
         if(!first){
-            this->acceleration_s = (v_val - this->velocity_s) / time_interval; // calculate acceleration
-
+            double acceleration = (v_val - this->velocity_s) / time_interval; // calculate acceleration
+            this->jerk_s = (acceleration - this->acceleration_s) / time_interval;
+            this->acceleration_s = acceleration;
             double vel_d = (d - this->d) / time_interval;
-            this->acceleration_d = (vel_d - velocity_d) / time_interval;
+
+            acceleration = (vel_d - velocity_d) / time_interval;
+            this->jerk_d = (acceleration - this->acceleration_d) / time_interval;
+            this->acceleration_d = acceleration;
             this->velocity_d = vel_d;
         } else {
-            this->acceleration_s = acceleration_d = 0;
+            acceleration_s = max_acceleration;
+            acceleration_d = 0;
+            jerk_s = 0;
+            jerk_d = 0;
             velocity_d = 0;
             first = false;
         }
@@ -133,9 +143,8 @@ public:
         this->x = x;
         this->y = y;
 
-        this->d = d;
-
         this->s = s;
+        this->d = d;
     }
 
     inline void setTurnType(turn type){
@@ -179,11 +188,11 @@ public:
     }
 
     inline double predictS(){
-        return s + velocity_s * time_interval + acceleration_s * pow(time_interval, 2);
+        return s + velocity_s * time_interval + .5 * acceleration_s * pow(time_interval, 2) + 1/6 *jerk_s * pow(time_interval, 3);
     }
 
     inline double predictD(){
-        return d + velocity_d * time_interval + acceleration_d * pow(time_interval, 2);
+        return d + velocity_d * time_interval + .5 * acceleration_d * pow(time_interval, 2) + 1/6 *jerk_d * pow(time_interval, 3);
     }
 };
 
