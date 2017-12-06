@@ -7,7 +7,9 @@
 
 
 class trajectory_generator {
-
+public:
+    trajectory_generator(){}
+    ~trajectory_generator(){}
 };
 
 
