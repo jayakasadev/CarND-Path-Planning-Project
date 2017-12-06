@@ -1,144 +1,131 @@
 //
-// Created by jay on 11/27/17.
+// Created by jay on 12/5/17.
 //
 
 #ifndef PATH_PLANNING_VEHICLE_H
 #define PATH_PLANNING_VEHICLE_H
 
-#include <cmath>
-#include <chrono>
-#include "car_state.h"
-#include "constants.h"
+#include <math.h>
+#include <iostream>
+
+#include "../constants/constants.h"
 #include "utilities.h"
 
-using namespace std::chrono;
-
-class vehicle{
-public:
-    vehicle(){};
-    ~vehicle(){};
-
-    inline double getD(){
-        return d;
-    }
+struct vehicle{
 protected:
-    double x;
-    double y;
-    double yaw;
-    double d;
-};
+    float x;
+    float y;
 
-class other_vehicle : public vehicle{
-private:
-    double vx;
-    double vy;
-    double ax;
-    double ay;
+    float s;
+    float d;
+
+    float yaw;
+
+    float velocity; // in m/s
+
+    float acceleration; // in m/s^2
+
     bool first;
 
-    high_resolution_clock::time_point last_Seen;
+public:
+    vehicle(){}
+    ~vehicle(){}
 
-    inline long updateTime(){
-        return (high_resolution_clock::now() - last_Seen).count();
+    inline float getS(){
+        return s;
     }
 
+    inline float getD(){
+        return d;
+    }
+
+    inline float getYaw(){
+        return yaw;
+    }
+
+    inline float getVelocity(){
+        return velocity;
+    }
+
+    inline int getLane(){
+        return calculateLane(d);
+    }
+
+    inline float getAcceleration(){
+        return acceleration;
+    }
+
+    inline void print(){
+        std::cout << "[ s = " << s << ", d = " << d << ", yaw = " << yaw << ", velocity = " << velocity << ", acceleration = " << acceleration << " ]" << std::endl;
+    }
+};
+
+class driver : public vehicle {
 public:
-    other_vehicle(){
-        first = true;
-        yaw = 0;
-    };
-    ~other_vehicle(){};
+    // constructor for driver
+    driver(){
+        acceleration = 0;
+    }
 
-    inline void updateVehicle(double vx_val, double vy_val, double x, double y, double d, map_data &mapData){
-        if(!first){
-            this->ax = (vx_val - this->vx) / time_interval; // calculate acceleration
-            this->ay = (vy_val - this->vy) / time_interval; // calculate acceleration
-            // get yaw before updating position
-            yaw = mapData.getYaw(y, this->y, x, this->x);
-        }
-        else{
-            this->ax = this->ay = 0;
+    ~driver(){}
+
+    void update(float x, float y, float s, float d, float yaw, float speed){
+        if(first){
+            this->velocity = speed * mph_to_mps; // convert mph to m/s
             first = false;
+        } else {
+            // calculate acceleration
+            float temp = speed * mph_to_mps;
+            this->acceleration = (temp - this->velocity) / refresh_rate;
+            this->velocity = temp;
         }
-
-        this->vx = vx_val; // set velocity
-        this->vy = vy_val; // set velocity
 
         this->x = x;
         this->y = y;
+
+        this->s = s;
         this->d = d;
 
-        last_Seen = high_resolution_clock::now();
+        this->yaw = deg2rad(yaw);
     }
 
-    inline short getLane(){
-        return d / 4;
-    }
-
-    inline void predict(double &s, double &d, double &velocity, map_data &mapData){
-        // predict the position
-        double px = x + vx * predict_window + ax * pow(predict_window, 2);
-        double py = y + vy * predict_window + ay * pow(predict_window, 2);
-        vector<double> vals = mapData.getFrenet(px, py, yaw);
-        s = vals[0];
-        d = vals[1];
-
-        double pvx = vx + ax * predict_window;
-        double pvy = vy + ay * predict_window;
-        velocity = sqrt(pow(pvx, 2) + pow(pvy, 2)); // predict the velocity
-    }
-
-    inline bool outDated(){
-        if(updateTime() >= time_diff){
-            first = true;
-            return true;
-        }
-        return false;
+    inline void print(){
+        std::cout << "driver:\t";
+        vehicle::print();
     }
 };
 
-class driver : public vehicle{
+class others : public vehicle {
 private:
-    double velocity_d;
-    double velocity_s;
-    double acceleration_s;
-    double acceleration_d;
-    double jerk_s;
-    double jerk_d;
-    double s;
-    bool first;
-    short desired_lane;
-
-    turn turn_type;
+    float vx;
+    float vy;
 public:
+    // constructor for sensor fusion
+    others(){
+        acceleration = 0;
+        yaw = 0;
+    }
 
-    driver():first(true), turn_type(STAY),desired_lane(1){}
-    ~driver(){}
+    ~others(){}
 
-    inline void updateVehicle(double v_val, double x, double y, double s, double d, map_data &mapData){
-        v_val = mph_2_mps * v_val;
-        if(!first){
-            double acceleration = (v_val - this->velocity_s) / time_interval; // calculate acceleration
-            this->jerk_s = (acceleration - this->acceleration_s) / time_interval;
-            this->acceleration_s = acceleration;
-            double vel_d = (d - this->d) / time_interval;
-
-            acceleration = (vel_d - velocity_d) / time_interval;
-            this->jerk_d = (acceleration - this->acceleration_d) / time_interval;
-            this->acceleration_d = acceleration;
-            this->velocity_d = vel_d;
-        } else {
-            acceleration_s = max_acceleration;
-            acceleration_d = 0;
-            jerk_s = 0;
-            jerk_d = 0;
-            velocity_d = 0;
+    void update(float x, float y, float vx, float vy, float s, float d){
+        if(first){
+            this->velocity = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s
             first = false;
+        } else {
+            float temp = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s;
+            this->acceleration = (temp - this->velocity) / refresh_rate;
+            this->velocity = temp;
+
+            // predictions
+            float px = x + vx * time_period + ((vx - this->vx) / refresh_rate) * pow(time_period, 2); // predict x location 1 sec in future
+            float py = y + vy * time_period + ((vy - this->vy) / refresh_rate) * pow(time_period, 2); // predict y location 1 sec in future
+
+            this->yaw = calculateYaw(y, py, x, py);
         }
 
-        this->velocity_s = v_val; // set velocity
-
-        yaw = mapData.getYaw(y, this->y, x, this->x);
+        this->vx = vx;
+        this->vy = vy;
 
         this->x = x;
         this->y = y;
@@ -147,54 +134,10 @@ public:
         this->d = d;
     }
 
-    inline void setTurnType(turn type){
-        this->turn_type = type;
-    }
-
-    inline void setDesiredLane(short lane){
-        this->desired_lane = lane;
-    }
-
-    inline short getDesiredLane(){
-        return desired_lane;
-    }
-
-    inline short getLane(){
-        return d / 4;
-    }
-
-    inline turn getTurnType(){
-        return turn_type;
-    }
-
-    inline double & getS(){
-        return s;
-    }
-
-    inline double getVelocityS(){
-        return velocity_s;
-    }
-
-    inline double getVelocityD(){
-        return velocity_d;
-    }
-
-    inline double getAccelerationS(){
-        return acceleration_s;
-    }
-
-    inline double getAccelerationD(){
-        return acceleration_d;
-    }
-
-    inline double predictS(){
-        return s + velocity_s * time_interval + .5 * acceleration_s * pow(time_interval, 2) + 1/6 *jerk_s * pow(time_interval, 3);
-    }
-
-    inline double predictD(){
-        return d + velocity_d * time_interval + .5 * acceleration_d * pow(time_interval, 2) + 1/6 *jerk_d * pow(time_interval, 3);
+    inline void print(){
+        std::cout << "others:\t";
+        vehicle::print();
     }
 };
-
 
 #endif //PATH_PLANNING_VEHICLE_H

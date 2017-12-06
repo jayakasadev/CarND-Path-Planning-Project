@@ -11,16 +11,16 @@
 #include <sstream>
 #include <iostream>
 
-using namespace std;
+#include "../utilities/utilities.h"
 
 class map_data {
 public:
     // Load up map values for waypoint's x,y,s and d normalized normal vectors
-    vector<double> map_waypoints_x;
-    vector<double> map_waypoints_y;
-    vector<double> map_waypoints_s;
-    vector<double> map_waypoints_dx;
-    vector<double> map_waypoints_dy;
+    std::vector<double> map_waypoints_x;
+    std::vector<double> map_waypoints_y;
+    std::vector<double> map_waypoints_s;
+    std::vector<double> map_waypoints_dx;
+    std::vector<double> map_waypoints_dy;
 
     map_data(){
         std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
@@ -44,15 +44,6 @@ public:
             map_waypoints_dx.push_back(d_x);
             map_waypoints_dy.push_back(d_y);
         }
-    }
-
-    // For converting back and forth between radians and degrees.
-    static inline constexpr double pi() { return M_PI; }
-    inline double deg2rad(double x) { return x * pi() / 180; }
-    inline double rad2deg(double x) { return x * 180 / pi(); }
-
-    inline double distance(double x1, double y1, double x2, double y2)const {
-        return sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
     }
 
     /**
@@ -125,7 +116,7 @@ public:
  * @param maps_y
  * @return
  */
-    vector<double> getFrenet(double x, double y, double theta)const {
+    std::vector<double> getFrenet(double x, double y, double theta)const {
         int next_wp = NextWaypoint(x,y, theta);
 
         int prev_wp;
@@ -170,7 +161,7 @@ public:
     }
 
     // Transform from Frenet s,d coordinates to Cartesian x,y
-    vector<double> getXY(double s, double d)const {
+    std::vector<double> getXY(double s, double d)const {
         int prev_wp = -1;
 
         while(s > map_waypoints_s[prev_wp+1] && (prev_wp < (int)(map_waypoints_s.size()-1) )){
@@ -197,13 +188,9 @@ public:
 
     }
 
-    inline double getYaw(double ref_y, double ref_y_prev, double ref_x, double ref_x_prev)const {
-        return atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
-    }
-
 private:
     // Waypoint map to read from
-    const std::string map_file_ = "../data/highway_map.csv";
+    const std::string map_file_ = "../../data/highway_map.csv";
 };
 
 

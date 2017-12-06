@@ -1,28 +1,40 @@
-/**
- * Methods provided by udacity for the students
- */
+//
+// Created by jay on 12/5/17.
+//
 
-#ifndef UTILTIES_H_
-#define UTILTIES_H_
+#ifndef PATH_PLANNING_UTILITIES_H
+#define PATH_PLANNING_UTILITIES_H
 
 #include <math.h>
-#include <vector>
-#include <string>
-#include "constants.h"
+#include "../constants/constants.h"
 
-using namespace std;
+// For converting back and forth between radians and degrees.
+static inline constexpr double pi() { return M_PI; }
+inline double deg2rad(double x) { return x * pi() / 180; }
+inline double rad2deg(double x) { return x * 180 / pi(); }
 
-/*
-inline int min_element(float arr[], int size){
-    int index = 0;
-    // cout << "elements: " << size << endl;
-    for(int a = 1; a < size; a++){
-        if(arr[index] > arr[a]){
-            index = a;
-        }
-    }
-    return index;
+inline double distance(double x1, double y1, double x2, double y2) {
+    return sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 }
-*/
 
-#endif //UTILTIES_H_
+inline double calculateFutureS(double s){
+    return fmod(s, max_s);
+}
+
+inline float calculateTargetD(int lane){
+    return 4 * lane + 2;
+}
+
+inline int calculateLane(double d){
+    return int(d / 4);
+}
+
+inline double calculateYaw(double ref_y, double ref_y_prev, double ref_x, double ref_x_prev){ // returns in radians
+    return atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+}
+
+inline int getNumPoints(float time_period){
+    return int(time_period / refresh_rate);
+}
+
+#endif //PATH_PLANNING_UTILITIES_H
