@@ -11,8 +11,6 @@
 #include "../utilities/json.hpp"
 #include "../behavior_planner/behavior_planner.h"
 
-using json = nlohmann::json;
-
 class sensor_fusion {
 private:
     std::unordered_map<short, others> hashmap;
@@ -25,16 +23,14 @@ private:
         return search_field_decay * field;
     }
 
-    void predictLane(short lane, json<> &sensor_fusion, driver &driver, map_data &mapData, behavior_planner &planner);
+    void predictLane(short lane, nlohmann::basic_json<> &sensor_fusion, driver &driver, map_data &mapData, behavior_planner &planner);
 
 public:
     sensor_fusion(){}
 
-    ~sensor_fusion(){
-        delete hashmap;
-    }
+    ~sensor_fusion(){}
 
-    void predict(json<> &sensor_fusion, driver &driver, map_data &mapData, behavior_planner &planner);
+    void predict(nlohmann::basic_json<> &sensor_fusion, driver &driver, map_data &mapData, behavior_planner &planner);
 };
 
 

@@ -9,6 +9,7 @@
 #include "utilities/json.hpp"
 #include "map/map.h"
 #include "utilities/vehicle.h"
+#include "scores/scores.h"
 
 using namespace std;
 
@@ -37,7 +38,9 @@ int main() {
 
     driver car;
 
-    h.onMessage([&mapData, &car](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
+    scores scores;
+
+    h.onMessage([&mapData, &car, &scores](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -79,6 +82,9 @@ int main() {
                     if(size < 2){
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
+                        // reset the scores
+                        scores.reset();
+
                         // cars moving
                         // TODO get the last two points in the path and use them to calculate yaw, speed, s, d
                         // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);

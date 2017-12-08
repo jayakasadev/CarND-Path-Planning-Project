@@ -1,0 +1,12 @@
+//
+// Created by jay on 12/8/17.
+//
+
+#ifndef PATH_PLANNING_VEHICLE_BEHAVIOR_H
+#define PATH_PLANNING_VEHICLE_BEHAVIOR_H
+
+enum vehicle_behavior{
+    KEEP_VELOCITY, FOLLOW, MERGE, STOP
+};
+
+#endif //PATH_PLANNING_VEHICLE_BEHAVIOR_H

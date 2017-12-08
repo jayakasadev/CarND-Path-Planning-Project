@@ -5,6 +5,8 @@
 #ifndef PATH_PLANNING_CONSTANTS_H
 #define PATH_PLANNING_CONSTANTS_H
 
+#include "../enums/drive_mode.h"
+
 // The max s value before wrapping around the track back to 0
 const float max_s = 6945.554;
 
@@ -31,5 +33,8 @@ const short search_field_timelimit = 5000; // forget the car if I have not seen 
 const float refresh_rate = 0.02;
 
 const float time_period = 1.0;
+
+const drive_mode driveMode = REGULAR;
+
 
 #endif //PATH_PLANNING_CONSTANTS_H
