@@ -34,6 +34,8 @@ const float refresh_rate = 0.02;
 
 const float time_period = 1.0;
 
+const short num_points = time_period / refresh_rate;
+
 const drive_mode driveMode = REGULAR;
 
 
