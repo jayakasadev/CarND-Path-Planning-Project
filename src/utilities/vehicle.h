@@ -7,9 +7,13 @@
 
 #include <math.h>
 #include <iostream>
+#include <chrono>
 
 #include "../constants/constants.h"
 #include "utilities.h"
+#include "read_write_lock.h"
+
+using namespace std::chrono;
 
 struct vehicle{
 protected:
@@ -99,30 +103,53 @@ class others : public vehicle {
 private:
     float vx;
     float vy;
+    float px;
+    float py;
+    std::chrono::high_resolution_clock::time_point last_Seen;
+    read_write_lock lock;
+
+    inline void checkOutdated(){
+        lock.read_lock();
+        long time = (high_resolution_clock::now() - last_Seen).count();
+        if(time > search_field_timelimit){ // last
+            first = true;
+            acceleration = 0;
+            yaw = 0;
+        }
+        lock.read_unlock();
+    }
+
 public:
     // constructor for sensor fusion
     others(){
         acceleration = 0;
         yaw = 0;
+        last_Seen = high_resolution_clock::now(); // update last seen time
     }
 
     ~others(){}
 
     void update(float x, float y, float vx, float vy, float s, float d){
+        checkOutdated();
+        lock.write_lock();
         if(first){
             this->velocity = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s
             first = false;
+
+            px = x + vx * time_period;
+            py = y + vy * time_period;
         } else {
             float temp = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s;
             this->acceleration = (temp - this->velocity) / refresh_rate;
             this->velocity = temp;
 
             // predictions
-            float px = x + vx * time_period + ((vx - this->vx) / refresh_rate) * pow(time_period, 2); // predict x location 1 sec in future
-            float py = y + vy * time_period + ((vy - this->vy) / refresh_rate) * pow(time_period, 2); // predict y location 1 sec in future
+            px = x + vx * time_period + ((vx - this->vx) / refresh_rate) * pow(time_period, 2); // predict x location 1 sec in future
+            py = y + vy * time_period + ((vy - this->vy) / refresh_rate) * pow(time_period, 2); // predict y location 1 sec in future
 
             this->yaw = calculateYaw(y, py, x, py);
         }
+        last_Seen = high_resolution_clock::now(); // update last seen time
 
         this->vx = vx;
         this->vy = vy;
@@ -132,11 +159,19 @@ public:
 
         this->s = s;
         this->d = d;
+
+        lock.write_unlock();
     }
 
     inline void print(){
+        lock.read_lock();
         std::cout << "others:\t";
         vehicle::print();
+        lock.read_unlock();
+    }
+
+    inline std::vector<float> getPredicted(){
+        return {px, py};
     }
 };
 

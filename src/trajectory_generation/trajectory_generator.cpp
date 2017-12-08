@@ -18,7 +18,7 @@ void trajectory_generator::calculatePoints(VectorXd constants_S, VectorXd consta
         double s = calculatePoint(a * refresh_rate, constants_S);
         double d = calculatePoint(a * refresh_rate, constants_D);
 
-        std::vector<double> xy = mapData.getXY(s, d);
+        std::vector<double> xy = mapData->getXY(s, d);
         // cout << "s: " << s << " || d: " << d << " time = " << a * time_interval << endl;
         // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
         x_vals.push_back(xy[0]);

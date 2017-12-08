@@ -1,3 +1,4 @@
+#include <iostream>
 #include "scores.h"
 
 void scores::initialize(){
@@ -76,4 +77,24 @@ short scores::getDistanceBack(short lane){
     double out = distance_back[lane];
     distance_back_lock.read_unlock();
     return out;
+}
+
+void scores::printScores(){
+    velocity_lock.read_lock();
+    behavior_lock.read_lock();
+    distance_front_lock.read_lock();
+    distance_back_lock.read_lock();
+
+    std::cout << "SCORES: " << std::endl;
+    std::cout << "\tlane\t||\tbehavior\t||\tvelocity\t||\tdistance front\t||\tdistance back" << std::endl;
+    for(short a = 0; a < num_lanes; a++){
+        std::cout << "\t" << a << "\t||\t" << this->behavior[a] << "\t||\t" << velocity[a] << "\t||\t" << distance_front[a] << "\t||\t" << distance_back[a] << std::endl;
+    }
+
+    velocity_lock.read_unlock();
+    behavior_lock.read_unlock();
+    distance_front_lock.read_unlock();
+    distance_back_lock.read_unlock();
+
+
 }

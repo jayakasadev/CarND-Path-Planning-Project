@@ -47,6 +47,8 @@ public:
     short getDistanceFront(short lane);
 
     short getDistanceBack(short lane);
+
+    void printScores();
 };
 
 

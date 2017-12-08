@@ -1,15 +1,13 @@
-#include <fstream>
 #include <uWS/uWS.h>
 #include <chrono>
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
 #include "utilities/json.hpp"
 #include "map/map.h"
 #include "utilities/vehicle.h"
 #include "scores/scores.h"
+#include "sensor_fusion/sensor_fusion.h"
 
 using namespace std;
 
@@ -38,9 +36,11 @@ int main() {
 
     driver car;
 
-    scores scores;
+    scores values;
 
-    h.onMessage([&mapData, &car, &scores](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
+    sensor_fusion sensorFusion(car, mapData, values);
+
+    h.onMessage([&mapData, &car, &values, &sensorFusion](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -83,7 +83,7 @@ int main() {
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
                         // reset the scores
-                        scores.reset();
+                        values.reset();
 
                         // cars moving
                         // TODO get the last two points in the path and use them to calculate yaw, speed, s, d
@@ -113,6 +113,14 @@ int main() {
                         car.update(ref_x, ref_y, sAndD[0], sAndD[1], ref_yaw, velocity);
                     }
                     car.print();
+
+
+
+                    // thread to run sensor_fusion
+
+                    // thread to run behavior_planner
+
+                    // wait to run trajectory
 
                     json msgJson;
 

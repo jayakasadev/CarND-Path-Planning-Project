@@ -16,13 +16,13 @@ class trajectory_generator {
 private:
     std::vector<double> x_vals;
     std::vector<double> y_vals;
-    map_data mapData;
+    const map_data *mapData;
 
     double calculatePoint(float t, VectorXd constants);
 
 public:
-    trajectory_generator(map_data &mapData){
-        this->mapData = mapData;
+    trajectory_generator(const map_data &mapData){
+        this->mapData = &mapData;
     }
     ~trajectory_generator(){}
 
