@@ -17,6 +17,7 @@ private:
     std::vector<double> velocity;
     std::vector<double> distance_front;
     std::vector<double> distance_back;
+
     read_write_lock behavior_lock;
     read_write_lock velocity_lock;
     read_write_lock distance_front_lock;

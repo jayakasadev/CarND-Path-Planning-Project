@@ -17,7 +17,7 @@ using namespace std;
 
 class sensorfusion {
 private:
-    std::unordered_map<short, traffic> hashmap;
+    std::unordered_map<short, traffic*> hashmap;
     map_data *mapData;
     driver *car;
     scores *values;
@@ -30,7 +30,7 @@ private:
         return search_field_decay * field;
     }
 
-    void setScore(double s, double d, double velocity);
+    void setScore(double &s, double &d, double &velocity);
 
 public:
     sensorfusion(driver &car, map_data &mapData, scores &scores){
@@ -39,7 +39,13 @@ public:
         this->values = &scores;
     }
 
-    ~sensorfusion(){}
+    ~sensorfusion(){
+        for(auto itr = hashmap.begin(); itr != hashmap.end(); itr++) {
+            delete itr->second;
+            hashmap.erase(itr->first);
+        }
+        hashmap.clear();
+    }
 
     void predict(nlohmann::basic_json<> &sensor_fusion);
 };

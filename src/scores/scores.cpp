@@ -2,6 +2,11 @@
 #include "scores.h"
 
 void scores::initialize(short lane){
+    std::cout << "scores::initialize" << std::endl;
+    behavior_lock.write_lock();
+    velocity_lock.write_lock();
+    distance_front_lock.write_lock();
+    distance_back_lock.write_lock();
     // initialize the vectors for each lane
     for(short a = 0; a < num_lanes; a++){
         if(a == lane){
@@ -12,18 +17,31 @@ void scores::initialize(short lane){
         distance_front.push_back(spacing);
         distance_back.push_back(-spacing);
     }
+    distance_back_lock.write_unlock();
+    distance_front_lock.write_unlock();
+    velocity_lock.write_unlock();
+    behavior_lock.write_unlock();
 }
 
 void scores::reset(short lane){
+    std::cout << "scores::reset" << std::endl;
+    behavior_lock.write_lock();
+    velocity_lock.write_lock();
+    distance_front_lock.write_lock();
+    distance_back_lock.write_lock();
     behavior.clear();
     velocity.clear();
     distance_front.clear();
     distance_back.clear();
+    distance_back_lock.write_unlock();
+    distance_front_lock.write_unlock();
+    velocity_lock.write_unlock();
+    behavior_lock.write_unlock();
     initialize(lane);
 }
 
 void scores::setBehavior(short lane, vehicle_behavior action){
-    // std::cout << "scores::setBehavior" << std::endl;
+    std::cout << "scores::setBehavior" << std::endl;
     behavior_lock.read_lock();
     // std::cout << "got behavior read lock" << std::endl;
     if(this->behavior[lane] != action){
@@ -39,7 +57,7 @@ void scores::setBehavior(short lane, vehicle_behavior action){
 }
 
 void scores::setVelocity(short lane, double velocity){
-    // std::cout << "scores::setVelocity" << std::endl;
+    std::cout << "scores::setVelocity" << std::endl;
     velocity_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     if(this->velocity[lane] > velocity){
@@ -55,7 +73,7 @@ void scores::setVelocity(short lane, double velocity){
 }
 
 void scores::setDistanceFront(short lane, double distance){
-    // std::cout << "scores::setDistanceFront" << std::endl;
+    std::cout << "scores::setDistanceFront" << std::endl;
     distance_front_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     if(this->distance_front[lane] > distance){
@@ -71,7 +89,7 @@ void scores::setDistanceFront(short lane, double distance){
 }
 
 void scores::setDistanceBack(short lane, double distance){
-    // std::cout << "scores::setDistanceBack" << std::endl;
+    std::cout << "scores::setDistanceBack" << std::endl;
     distance_back_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     if(this->distance_back[lane] > distance){
@@ -87,7 +105,7 @@ void scores::setDistanceBack(short lane, double distance){
 }
 
 short scores::getVelocity(short lane){
-    // std::cout << "scores::getVelocity" << std::endl;
+    std::cout << "scores::getVelocity" << std::endl;
     velocity_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     double out = velocity[lane];
@@ -98,7 +116,7 @@ short scores::getVelocity(short lane){
 }
 
 vehicle_behavior scores::getBehavior(short lane){
-    // std::cout << "scores::getBehavior" << std::endl;
+    std::cout << "scores::getBehavior" << std::endl;
     behavior_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     vehicle_behavior out = behavior[lane];
@@ -109,7 +127,7 @@ vehicle_behavior scores::getBehavior(short lane){
 }
 
 short scores::getDistanceFront(short lane){
-    // std::cout << "scores::getDistanceFront" << std::endl;
+    std::cout << "scores::getDistanceFront" << std::endl;
     distance_front_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     double out = distance_front[lane];
@@ -120,7 +138,7 @@ short scores::getDistanceFront(short lane){
 }
 
 short scores::getDistanceBack(short lane){
-    // std::cout << "scores::getDistanceBack" << std::endl;
+    std::cout << "scores::getDistanceBack" << std::endl;
     distance_back_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
     double out = distance_back[lane];

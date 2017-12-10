@@ -4,7 +4,7 @@
 
 #include "sensor_fusion.h"
 
-void sensorfusion::setScore(double s, double d, double velocity) {
+void sensorfusion::setScore(double &s, double &d, double &velocity) {
     // cout << "sensorfusion::setScore" << endl;
     int lane = calculateLane(d);
     double distance = car->getS() - s;
@@ -19,12 +19,12 @@ void sensorfusion::setScore(double s, double d, double velocity) {
         if(lane == car->getLane()){
             if(distance <= search_field + 5) {
                 if(velocity > 0 && velocity < max_velocity_mps){
-                    values->setBehavior(lane, FOLLOW);
+                    // values->setBehavior(lane, FOLLOW);
                 }
                 else if(velocity == 0){
-                    values->setBehavior(lane, STOP);
+                    // values->setBehavior(lane, STOP);
                 }
-                values->setVelocity(lane, velocity);
+                // values->setVelocity(lane, velocity);
             }
         }
 
@@ -38,13 +38,13 @@ void sensorfusion::setScore(double s, double d, double velocity) {
         // note distance_front
         // cout << "setBehavior and setVelocity" << endl;
         if(distance >= -search_field + 5) {
-            values->setBehavior(lane, STOP);
-            values->setVelocity(lane, 0);
+            // values->setBehavior(lane, STOP);
+            // values->setVelocity(lane, 0);
         }
         // cout << "getDistanceBack" << endl;
         if(values->getDistanceBack(lane) < distance){
             // cout << "setDistanceBack" << endl;
-            values->setDistanceBack(lane, distance);
+            // values->setDistanceBack(lane, distance);
         }
     }
     // cout << "setScore Completed" << endl;
@@ -63,27 +63,26 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion){
             double vy = sensor_fusion[a][4]; // longitudinal velocity
             double s = sensor_fusion[a][5]; // s value of the ath car
 
-            cout << id << " || s = " << s << " || d = " << d << endl;
+            // cout << id << " || s = " << s << " || d = " << d << endl;
             cout << "map: " << hashmap.size() << endl;
-            if(hashmap.find(id) != hashmap.end()){
-                hashmap.at(id).update(x, y, vx, vy, s, d);
-            } else{
-                traffic* vehicle = new traffic;
-                vehicle->update(x, y, vx, vy, s, d);
-                hashmap[id] = *vehicle;
+            if(hashmap.find(id) == hashmap.end()){
+                hashmap[id] = new traffic(); // add new element
             }
+            hashmap.at(id)->update(x, y, vx, vy, s, d);
             // score the vehicles here
-            double velocity = hashmap.at(id).getVelocityS();
+            double velocity = hashmap.at(id)->getVelocityS();
             setScore(s, d, velocity);
 
-            vector<double> predicted = hashmap.at(id).getPredicted();
-            cout << "s: " << predicted[0] << " || d: " << predicted[1] << endl;
-            velocity = hashmap.at(id).getPredictedVelocityS();
+            vector<double> predicted = hashmap.at(id)->getPredicted();
+            // cout << "s: " << predicted[0] << " || d: " << predicted[1] << endl;
+            velocity = hashmap.at(id)->getPredictedVelocityS();
+
+            // TODO find the source of memory leak
             setScore(predicted[0], predicted[1], velocity);
 
-            hashmap.at(id).print();
+            hashmap.at(id)->print();
         }
     }
     cout << "printing scores" << endl;
-    // values->printScores(); // print the values as a test for now
+    values->printScores(); // print the values as a test for now
 }
