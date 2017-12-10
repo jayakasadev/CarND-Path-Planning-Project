@@ -25,8 +25,8 @@ inline float calculateTargetD(int lane){
     return 4 * lane + 2;
 }
 
-inline int calculateLane(double d){
-    return int(d / 4);
+inline short calculateLane(double d){
+    return short(d / 4);
 }
 
 inline double calculateYaw(double ref_y, double ref_y_prev, double ref_x, double ref_x_prev){ // returns in radians

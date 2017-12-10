@@ -1,0 +1,49 @@
+//
+// Created by jay on 12/9/17.
+//
+
+#include "traffic.h"
+
+void traffic::update(double x, double y, double vx, double vy, double s, double d){
+    // std::cout << "traffic::update" << std::endl;
+    // print();
+    if(first){
+        this->velocity_s = sqrt(pow(vx, 2) + pow(vy, 2)) * mph_to_mps; // vx and vy are in m/s
+        first = false;
+        this->velocity_d = 0;
+        // px = x + vx * time_period;
+        // py = y + vy * time_period;
+    } else {
+        checkOutdated(); // check if the measurements are outdated
+        double temp = sqrt(pow(vx, 2) + pow(vy, 2)) * mph_to_mps; // vx and vy are in m/s;
+        this->acceleration_s = (temp - this->velocity_s) / refresh_rate;
+        this->velocity_s = temp;
+
+        temp = ((d - this->d) / refresh_rate);
+        this->acceleration_d = (temp - this->velocity_d) / refresh_rate;
+        this->velocity_d = temp;
+        // predictions
+        // px = x + vx * time_period + ((vx - this->vx) / refresh_rate) * pow(time_period, 2); // predict x location 1 sec in future
+        // py = y + vy * time_period + ((vy - this->vy) / refresh_rate) * pow(time_period, 2); // predict y location 1 sec in future
+
+        // this->yaw = calculateYaw(y, py, x, py);
+    }
+    last_Seen = high_resolution_clock::now(); // update last seen time
+
+    ps = calculateFutureS(s + this->velocity_s * time_period + this->acceleration_s * pow(time_period, 2));
+    pd = d + this->velocity_d * time_period + this->acceleration_d * pow(time_period, 2);
+
+    this->vx = vx;
+    this->vy = vy;
+
+    this->x = x;
+    this->y = y;
+
+    this->s = s;
+    this->d = d;
+}
+
+void traffic::print() {
+    std::cout << "traffic:\t";
+    vehicle::print();
+}

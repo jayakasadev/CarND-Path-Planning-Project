@@ -117,6 +117,7 @@ public:
  * @return
  */
     std::vector<double> getFrenet(double x, double y, double theta)const {
+        // std::cout << "getFrenet" << std::endl;
         int next_wp = NextWaypoint(x,y, theta);
 
         int prev_wp;
@@ -155,6 +156,7 @@ public:
         }
 
         frenet_s += distance(0,0,proj_x,proj_y);
+        // std::cout << "frenet_s: " << frenet_s << " frenet_d: " << frenet_d << std::endl;
 
         return {frenet_s,frenet_d};
 
@@ -190,7 +192,7 @@ public:
 
 private:
     // Waypoint map to read from
-    const std::string map_file_ = "../../data/highway_map.csv";
+    const std::string map_file_ = "../data/highway_map.csv";
 };
 
 

@@ -15,30 +15,30 @@ class scores {
 private:
     std::vector<vehicle_behavior> behavior;
     std::vector<double> velocity;
-    std::vector<float> distance_front;
-    std::vector<float> distance_back;
+    std::vector<double> distance_front;
+    std::vector<double> distance_back;
     read_write_lock behavior_lock;
     read_write_lock velocity_lock;
     read_write_lock distance_front_lock;
     read_write_lock distance_back_lock;
 
 public:
-    scores(){
-        initialize();
+    scores(short lane){
+        initialize(lane);
     }
     ~scores(){}
 
-    void reset();
+    void reset(short lane);
 
-    void initialize();
+    void initialize(short lane);
 
     void setBehavior(short lane, vehicle_behavior action);
 
-    void setVelocity(short lane, float velocity);
+    void setVelocity(short lane, double velocity);
 
-    void setDistanceFront(short lane, float distance);
+    void setDistanceFront(short lane, double distance);
 
-    void setDistanceBack(short lane, float distance);
+    void setDistanceBack(short lane, double distance);
 
     short getVelocity(short lane);
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include "utilities/json.hpp"
 #include "map/map.h"
-#include "utilities/vehicle.h"
+#include "vehicle/vehicle.h"
 #include "scores/scores.h"
 #include "sensor_fusion/sensor_fusion.h"
 
@@ -36,9 +36,9 @@ int main() {
 
     driver car;
 
-    scores values;
+    scores values(1);
 
-    sensor_fusion sensorFusion(car, mapData, values);
+    sensorfusion sensorFusion(car, mapData, values);
 
     h.onMessage([&mapData, &car, &values, &sensorFusion](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
@@ -79,11 +79,12 @@ int main() {
                     int size = previous_path_x.size();
 
                     // turn the car on and start moving
+                    /*
                     if(size < 2){
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
                         // reset the scores
-                        values.reset();
+                        values.reset(car.getLane());
 
                         // cars moving
                         // TODO get the last two points in the path and use them to calculate yaw, speed, s, d
@@ -112,11 +113,16 @@ int main() {
 
                         car.update(ref_x, ref_y, sAndD[0], sAndD[1], ref_yaw, velocity);
                     }
+                    */
+                    cout << "setup car" << endl;
+                    car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     car.print();
-
-
+                    values.reset(car.getLane());
+                    cout << "finised reset" << endl;
 
                     // thread to run sensor_fusion
+                    // sensorFusion.predict(sensor_fusion); // TODO find the source of memory leak; may be the map object
+                    cout << "finised prediction" << endl;
 
                     // thread to run behavior_planner
 

@@ -13,7 +13,11 @@ private:
     short live_writers;
     short waiting_writers;
 public:
-    read_write_lock(){}
+    read_write_lock(){
+        live_writers = 0;
+        live_readers = 0;
+        waiting_writers = 0;
+    }
     ~read_write_lock(){}
 
     void read_lock(){
