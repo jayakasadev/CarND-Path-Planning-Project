@@ -126,16 +126,15 @@ int main() {
                     // thread to run sensor_fusion
                     // sensorFusion.predict(sensor_fusion_data);
                     // thread sf(&sensorfusion::predict, sensorFusion, sensor_fusion_data);
-                    // future<void> sf (async([&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);}));
-                    sensorFusion.predict(sensor_fusion_data);
+                    future<void> sf (async([&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);}));
+                    // sensorFusion.predict(sensor_fusion_data);
 
                     cout << "finished prediction" << endl;
-                    // sf.get();
 
                     // thread to run behavior_planner
                     future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
 
-
+                    sf.get();
 
                     try{
                         // wait to run trajectory
