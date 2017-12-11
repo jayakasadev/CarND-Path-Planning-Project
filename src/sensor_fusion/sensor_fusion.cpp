@@ -7,44 +7,33 @@
 void sensorfusion::setScore(double &s, double &d, double &velocity) {
     // cout << "sensorfusion::setScore" << endl;
     int lane = calculateLane(d);
-    double distance = car->getS() - s;
+    double distance = s - car->getS();
     double search_field = getSearchField(lane);
     // cout << "lane = " << lane << " || distance = " << distance << " || search_field = " << search_field << endl;
-    if(distance > 0){ // within the search field
-        // cout << "in front" << endl;
-        // vehicle in front
-        // check if it is in my search field
-        // mark lane behavior
-        // note velocity
-        if(lane == car->getLane()){
-            if(distance <= search_field + 5) {
-                if(velocity > 0 && velocity < max_velocity_mps){
-                    // values->setBehavior(lane, FOLLOW);
-                }
-                else if(velocity == 0){
-                    // values->setBehavior(lane, STOP);
-                }
-                // values->setVelocity(lane, velocity);
+    if(lane == car->getLane()){
+        if(distance <= search_field + search_field_buffer){
+            // its in above the buffer line
+            // check velocity for behavior
+            if(velocity > 0){
+                values->setFollow(lane);
+            } else {
+                values->setStop(lane);
             }
-        }
-
-
-    }
-    else {
-        // cout << "behind" << endl;
-        // vehicle is next to or behind me
-        // check if it is in my search field
-        // note distance_back
-        // note distance_front
-        // cout << "setBehavior and setVelocity" << endl;
-        if(distance >= -search_field + 5) {
-            // values->setBehavior(lane, STOP);
-            // values->setVelocity(lane, 0);
-        }
-        // cout << "getDistanceBack" << endl;
-        if(values->getDistanceBack(lane) < distance){
-            // cout << "setDistanceBack" << endl;
-            // values->setDistanceBack(lane, distance);
+            values->setVelocity(lane, velocity);
+        } else if(distance >= -search_field + search_field_buffer ){
+            // it is below the buffer line
+            if(lane == car->getLane()){
+                if(velocity > 0){
+                    values->setFollow(lane);
+                } else {
+                    values->setStop(lane);
+                }
+                values->setVelocity(lane, velocity);
+            } else {
+                // it is obstructing the lane we want to go in
+                values->setStop(lane);
+                values->setVelocity(lane, 0);
+            }
         }
     }
     // cout << "setScore Completed" << endl;
@@ -63,12 +52,15 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion){
             double vy = sensor_fusion[a][4]; // longitudinal velocity
             double s = sensor_fusion[a][5]; // s value of the ath car
 
-            // cout << id << " || s = " << s << " || d = " << d << endl;
-            cout << "map: " << hashmap.size() << endl;
+            cout << id << " || vx = " << vx << " || vy = " << vy << endl;
+            // cout << "map: " << hashmap.size() << endl;
             if(hashmap.find(id) == hashmap.end()){
                 hashmap[id] = new traffic(); // add new element
             }
             hashmap.at(id)->update(x, y, vx, vy, s, d);
+
+            hashmap.at(id)->print();
+
             // score the vehicles here
             double velocity = hashmap.at(id)->getVelocityS();
             setScore(s, d, velocity);
@@ -79,10 +71,8 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion){
 
             // TODO find the source of memory leak
             setScore(predicted[0], predicted[1], velocity);
-
-            hashmap.at(id)->print();
         }
     }
-    cout << "printing scores" << endl;
+    // cout << "printing scores" << endl;
     values->printScores(); // print the values as a test for now
 }

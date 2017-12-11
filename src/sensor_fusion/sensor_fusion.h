@@ -17,7 +17,7 @@ using namespace std;
 
 class sensorfusion {
 private:
-    std::unordered_map<short, traffic*> hashmap;
+    std::unordered_map<short, traffic *> hashmap;
     map_data *mapData;
     driver *car;
     scores *values;

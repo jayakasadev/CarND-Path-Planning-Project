@@ -44,8 +44,8 @@ int main() {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
-        auto sdata = string(data).substr(0, length);
-        cout << sdata << endl;
+        // auto sdata = string(data).substr(0, length);
+        // cout << sdata << endl;
         if (length && length > 2 && data[0] == '4' && data[1] == '2') {
 
             auto s = hasData(data);
@@ -114,15 +114,15 @@ int main() {
                         car.update(ref_x, ref_y, sAndD[0], sAndD[1], ref_yaw, velocity);
                     }
                     */
-                    cout << "setup car" << endl;
+                    // cout << "setup car" << endl;
                     car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     car.print();
                     values.reset(car.getLane());
-                    cout << "finised reset" << endl;
+                    // cout << "finised reset" << endl;
 
                     // thread to run sensor_fusion
                     sensorFusion.predict(sensor_fusion);
-                    cout << "finised prediction" << endl;
+                    // cout << "finised prediction" << endl;
 
                     // thread to run behavior_planner
 
@@ -136,18 +136,18 @@ int main() {
                     // next_x_vals.push_back(car_x);
                     // next_x_vals.push_back(car_y);
 
-                    cout << "about to set x and y vals" << endl;
+                    // cout << "about to set x and y vals" << endl;
 
                     // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;
-                    cout << "set x and y vals" << endl;
+                    // cout << "set x and y vals" << endl;
 
                     auto msg = "42[\"control\","+ msgJson.dump()+"]";
 
                     //this_thread::sleep_for(chrono::milliseconds(1000));
                     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-                    cout << "end of block" << endl;
+                    // cout << "end of block" << endl;
                 }
             } else {
                 // Manual driving
@@ -155,7 +155,7 @@ int main() {
                 ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
             }
         }
-        cout << "done" << endl;
+        // cout << "done" << endl;
     });
 
     // We don't need this since we're not using HTTP but if it's removed the

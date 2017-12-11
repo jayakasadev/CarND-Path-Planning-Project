@@ -18,10 +18,11 @@ private:
     std::vector<double> distance_front;
     std::vector<double> distance_back;
 
-    read_write_lock behavior_lock;
-    read_write_lock velocity_lock;
-    read_write_lock distance_front_lock;
-    read_write_lock distance_back_lock;
+    read_write_lock lock;
+    // read_write_lock behavior_lock;
+    // read_write_lock velocity_lock;
+    // read_write_lock distance_front_lock;
+    // read_write_lock distance_back_lock;
 
 public:
     scores(short lane){
@@ -32,6 +33,10 @@ public:
     void reset(short lane);
 
     void initialize(short lane);
+
+    void setFollow(short lane);
+
+    void setStop(short lane);
 
     void setBehavior(short lane, vehicle_behavior action);
 

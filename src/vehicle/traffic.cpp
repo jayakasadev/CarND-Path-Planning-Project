@@ -5,22 +5,28 @@
 #include "traffic.h"
 
 void traffic::update(double x, double y, double vx, double vy, double s, double d){
-    // std::cout << "traffic::update" << std::endl;
-    // print();
+    std::cout << "traffic::update" << std::endl;
+    print();
     if(first){
-        this->velocity_s = sqrt(pow(vx, 2) + pow(vy, 2)) * mph_to_mps; // vx and vy are in m/s
+        this->velocity_s = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s
+        std::cout << " velocity_s : " << this->velocity_s << std::endl;
         first = false;
         this->velocity_d = 0;
         // px = x + vx * time_period;
         // py = y + vy * time_period;
     } else {
         checkOutdated(); // check if the measurements are outdated
-        double temp = sqrt(pow(vx, 2) + pow(vy, 2)) * mph_to_mps; // vx and vy are in m/s;
+        double temp = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s;
+        std::cout << "temp : " << temp << " velocity_s : " << this->velocity_s << std::endl;
         this->acceleration_s = (temp - this->velocity_s) / refresh_rate;
         this->velocity_s = temp;
 
+        std::cout << "acceleration_s " << this->acceleration_s << std::endl;
+
         temp = ((d - this->d) / refresh_rate);
+        std::cout << "temp : " << temp << " velocity_d : " << velocity_d << std::endl;
         this->acceleration_d = (temp - this->velocity_d) / refresh_rate;
+        std::cout << "acceleration_d " << this->acceleration_d << std::endl;
         this->velocity_d = temp;
         // predictions
         // px = x + vx * time_period + ((vx - this->vx) / refresh_rate) * pow(time_period, 2); // predict x location 1 sec in future
