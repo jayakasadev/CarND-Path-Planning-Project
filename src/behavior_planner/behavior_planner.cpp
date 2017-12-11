@@ -26,29 +26,32 @@ vector<VectorXd> behavior_planner::bestOption(){
     vector<future<trajectory_option>> options;
     for(short a = 0; a < num_lanes; a++){
         // future<trajectory_option> future_option;
-        if(driveMode == SPORT){
-            cout << "SPORT" << endl;
-            options.push_back(async([this, a]{ return this->calculateSport(a); }));
-        } else if(driveMode == ECONOMY){
-            cout << "ECONOMY" << endl;
-            options.push_back(async([this, a]{ return this->calculateEconomy(a); }));
-        } else {
-            // cout << "REGULAR" << endl;
-            options.push_back(async([this, a]{ return this->calculate(a); }));
+        if(values->getBehavior(a) != STOP){ // only going to bother calculating if the lane is not stop
+            if(driveMode == SPORT){
+                cout << "SPORT" << endl;
+                options.push_back(async([this, a]{ return this->calculateSport(a); }));
+            } else if(driveMode == ECONOMY){
+                cout << "ECONOMY" << endl;
+                options.push_back(async([this, a]{ return this->calculateEconomy(a); }));
+            } else {
+                // cout << "REGULAR" << endl;
+                options.push_back(async([this, a]{ return this->calculate(a); }));
+            }
         }
     }
 
     // cout << "finished calculations: " << options.size() << endl;
 
-    short index = 0;
-    trajectory_option lowest = options[index].get();
+    // this part is synchronous
+    // cannot compare without the completed computations
+    // this part is only as slow as the slowest calculation
+    trajectory_option lowest = options[0].get();
 
-    for(short a = 1; a < num_lanes; a++){
+    for(short a = 1; a < options.size(); a++){
         // cout << "index: " << index << " a: " << a << endl;
         try{
             trajectory_option compare = options[a].get();
             if(lowest.score > compare.score){
-                index = a;
                 lowest = compare;
             }
             // cout << "lowest score so far: " << lowest.score << endl;

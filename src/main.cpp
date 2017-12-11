@@ -129,7 +129,7 @@ int main() {
                     future<void> sf (async([&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);}));
                     // sensorFusion.predict(sensor_fusion_data);
 
-                    cout << "finished prediction" << endl;
+                    // cout << "finished prediction" << endl;
 
                     // thread to run behavior_planner
                     future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
