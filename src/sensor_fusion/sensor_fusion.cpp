@@ -4,43 +4,47 @@
 
 #include "sensor_fusion.h"
 
-// TODO setup scoring mechanism
 void sensorfusion::setScore(double &s, double &d, double &velocity) {
     // cout << "sensorfusion::setScore" << endl;
     int lane = calculateLane(d);
     double distance = s - car->getS();
     double search_field = getSearchField(lane);
     // cout << "lane = " << lane << " || distance = " << distance << " || search_field = " << search_field << endl;
-    if(lane == car->getLane()){
-        if(distance <= search_field + search_field_buffer){
-            // its in above the buffer line
-            // check velocity for behavior
-            if(velocity > 0 && velocity < values->getVelocity(lane)){ // obstacle is moving and below speed limit
-                values->setFollow(lane);
-                values->setVelocity(lane, velocity);
-            } else if(velocity == 0){ // stop the vehicle if the obstacle is stationary
-                values->setStop(lane);
-                values->setVelocity(lane, 0);
-            }
-            values->setDistanceFront(lane, distance);
-        } else if(distance >= -search_field + search_field_buffer){
-            // it is below the buffer line
+
+    if(distance <= values->getDistanceFront(lane) && distance > 0){ // it is less than 22 meters away
+        // cout << "front of me: " << (distance <= values->getDistanceFront(lane)) << endl;
+        // the vehicle is in front
+        if(distance <= search_field + search_field_buffer || driveMode == ECONOMY){ // the vehicle is about 2 cars away or i want the most economic drive
+            // set behavior and save velocity and distance in front
             if(lane == car->getLane()){
-                if(velocity > 0 && velocity < values->getVelocity(lane)){ // obstacle is moving and below speed limit
+                // only time follow is possible is if vehicle is in my lane
+                if(velocity > 0){
                     values->setFollow(lane);
-                    values->setVelocity(lane, velocity);
-                } else if(velocity == 0){ // stop the vehicle if the obstacle is stationary
+                } else{
                     values->setStop(lane);
-                    values->setVelocity(lane, 0);
                 }
+                values->setVelocity(lane, velocity);
             } else {
-                // it is obstructing the lane we want to go in
                 values->setStop(lane);
                 values->setVelocity(lane, 0);
-                values->setDistanceBack(lane, distance);
             }
+            // cout << "behavior: " << values->getBehavior(lane) << " velocity: " << values->getVelocity(lane) << endl;
         }
+        values->setDistanceFront(lane, distance);
+        // cout << "distance front: " << values->getDistanceFront(lane) << endl;
+    } else if(distance >= values->getDistanceBack(lane) && distance <= 0){
+        // cout << "behind me: " << (distance >= values->getDistanceBack(lane)) << endl;
+        // vehicle is behind
+        if(distance >= -search_field + search_field_buffer){ // vehicle is next to driver
+            // set to stop and save velocity and distance in front
+            values->setStop(lane);
+            values->setVelocity(lane, 0);
+            // cout << "behavior: " << values->getBehavior(lane) << " velocity: " << values->getVelocity(lane) << endl;
+        }
+        values->setDistanceBack(lane, distance);
+        // cout << "distance back: " << values->getDistanceBack(lane) << endl;
     }
+
     // cout << "setScore Completed" << endl;
 }
 

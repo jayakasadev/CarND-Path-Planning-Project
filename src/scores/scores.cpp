@@ -62,51 +62,45 @@ void scores::setVelocity(short lane, double velocity){
     // std::cout << "scores::setVelocity" << std::endl;
     // velocity_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
-    if(this->velocity[lane] > velocity){
-        // velocity_lock.read_unlock();
-        // std::cout << "released read lock" << std::endl;
-        // velocity_lock.write_lock();
-        // std::cout << "got write lock" << std::endl;
-        this->velocity[lane] = velocity;
-        // std::cout << this->velocity[lane] << std::endl;
-        // velocity_lock.write_unlock();
-        // std::cout << "released write lock" << std::endl;
-    }
+    // velocity_lock.read_unlock();
+    // std::cout << "released read lock" << std::endl;
+    // velocity_lock.write_lock();
+    // std::cout << "got write lock" << std::endl;
+    this->velocity[lane] = velocity;
+    // std::cout << this->velocity[lane] << std::endl;
+    // velocity_lock.write_unlock();
+    // std::cout << "released write lock" << std::endl;
 }
 
 void scores::setDistanceFront(short lane, double distance){
     // std::cout << "scores::setDistanceFront" << std::endl;
     // distance_front_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
-    if(this->distance_front[lane] > distance){
-        // distance_front_lock.read_unlock();
-        // std::cout << "released read lock" << std::endl;
-        // distance_front_lock.write_lock();
-        // std::cout << "got write lock" << std::endl;
-        this->distance_front[lane] = distance;
-        // std::cout << this->distance_front[lane] << std::endl;
-        // distance_front_lock.write_unlock();
-        // std::cout << "released write lock" << std::endl;
-    }
+    // distance_front_lock.read_unlock();
+    // std::cout << "released read lock" << std::endl;
+    // distance_front_lock.write_lock();
+    // std::cout << "got write lock" << std::endl;
+    this->distance_front[lane] = distance;
+    // std::cout << this->distance_front[lane] << std::endl;
+    // distance_front_lock.write_unlock();
+    // std::cout << "released write lock" << std::endl;
 }
 
 void scores::setDistanceBack(short lane, double distance){
     // std::cout << "scores::setDistanceBack" << std::endl;
     // distance_back_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
-    if(this->distance_back[lane] > distance){
-        // distance_back_lock.read_unlock();
-        // std::cout << "released read lock" << std::endl;
-        // distance_back_lock.write_lock();
-        // std::cout << "got write lock" << std::endl;
-        this->distance_back[lane] = distance;
-        // std::cout << this->distance_back[lane] << std::endl;
-        // distance_back_lock.write_unlock();
-        // std::cout << "released write lock" << std::endl;
-    }
+    // distance_back_lock.read_unlock();
+    // std::cout << "released read lock" << std::endl;
+    // distance_back_lock.write_lock();
+    // std::cout << "got write lock" << std::endl;
+    this->distance_back[lane] = distance;
+    // std::cout << this->distance_back[lane] << std::endl;
+    // distance_back_lock.write_unlock();
+    // std::cout << "released write lock" << std::endl;
 }
 
-short scores::getVelocity(short lane){
+double scores::getVelocity(short lane){
     // std::cout << "scores::getVelocity" << std::endl;
     // velocity_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
@@ -128,7 +122,7 @@ vehicle_behavior scores::getBehavior(short lane){
     return out;
 }
 
-short scores::getDistanceFront(short lane){
+double scores::getDistanceFront(short lane){
     // std::cout << "scores::getDistanceFront" << std::endl;
     // distance_front_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
@@ -139,7 +133,7 @@ short scores::getDistanceFront(short lane){
     return out;
 }
 
-short scores::getDistanceBack(short lane){
+double scores::getDistanceBack(short lane){
     // std::cout << "scores::getDistanceBack" << std::endl;
     // distance_back_lock.read_lock();
     // std::cout << "got read lock" << std::endl;

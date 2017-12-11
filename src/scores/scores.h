@@ -46,13 +46,13 @@ public:
 
     void setDistanceBack(short lane, double distance);
 
-    short getVelocity(short lane);
+    double getVelocity(short lane);
 
     vehicle_behavior getBehavior(short lane);
 
-    short getDistanceFront(short lane);
+    double getDistanceFront(short lane);
 
-    short getDistanceBack(short lane);
+    double getDistanceBack(short lane);
 
     void printScores();
 };
