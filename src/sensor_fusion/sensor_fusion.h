@@ -12,13 +12,13 @@
 #include "../scores/scores.h"
 #include "../vehicle/driver.h"
 #include "../vehicle/traffic.h"
+#include <thread>
 
 using namespace std;
 
 class sensorfusion {
 private:
     std::unordered_map<short, traffic *> hashmap;
-    map_data *mapData;
     driver *car;
     scores *values;
 
@@ -33,9 +33,8 @@ private:
     void setScore(double &s, double &d, double &velocity);
 
 public:
-    sensorfusion(driver &car, map_data &mapData, scores &scores){
+    sensorfusion(driver &car, scores &scores){
         this->car = &car;
-        this->mapData = &mapData;
         this->values = &scores;
     }
 

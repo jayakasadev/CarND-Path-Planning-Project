@@ -1,13 +1,13 @@
 #include <uWS/uWS.h>
-#include <chrono>
-#include <iostream>
-#include <thread>
-#include <vector>
+#include <future>
+
+#include "Eigen-3.3/Eigen/Dense"
 #include "utilities/json.hpp"
 #include "map/map.h"
 #include "vehicle/vehicle.h"
 #include "scores/scores.h"
 #include "sensor_fusion/sensor_fusion.h"
+#include "trajectory_generation/trajectory_generator.h"
 
 using namespace std;
 
@@ -38,9 +38,14 @@ int main() {
 
     scores values(1);
 
-    sensorfusion sensorFusion(car, mapData, values);
+    sensorfusion sensorFusion(car, values);
 
-    h.onMessage([&mapData, &car, &values, &sensorFusion](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
+    behavior_planner behaviorPlanner(car, values);
+
+    trajectory_generator trajectory(mapData);
+
+
+    h.onMessage([&mapData, &car, &values, &sensorFusion, &trajectory, &behaviorPlanner](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -74,12 +79,12 @@ int main() {
                     double end_path_d = j[1]["end_path_d"];
 
                     // Sensor Fusion Data, a list of all other cars on the same side of the road.
-                    auto sensor_fusion = j[1]["sensor_fusion"];
+                    auto sensor_fusion_data = j[1]["sensor_fusion"];
 
                     int size = previous_path_x.size();
 
                     // turn the car on and start moving
-                    /*
+
                     if(size < 2){
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
@@ -113,20 +118,33 @@ int main() {
 
                         car.update(ref_x, ref_y, sAndD[0], sAndD[1], ref_yaw, velocity);
                     }
-                    */
                     // cout << "setup car" << endl;
-                    car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
+                    // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     car.print();
-                    values.reset(car.getLane());
                     // cout << "finised reset" << endl;
 
                     // thread to run sensor_fusion
-                    sensorFusion.predict(sensor_fusion);
-                    // cout << "finised prediction" << endl;
+                    // sensorFusion.predict(sensor_fusion_data);
+                    // thread sf(&sensorfusion::predict, sensorFusion, sensor_fusion_data);
+                    // future<void> sf (async([&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);}));
+                    sensorFusion.predict(sensor_fusion_data);
+
+                    cout << "finished prediction" << endl;
+                    // sf.get();
 
                     // thread to run behavior_planner
+                    future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
 
-                    // wait to run trajectory
+
+
+                    try{
+                        // wait to run trajectory
+                        vector<VectorXd> s_d = bp.get();
+
+                        cout << "s: " << s_d[0].transpose() << " d: " << s_d[1].transpose() << endl;
+                    } catch (future_error &e){
+                        cout << e.what() << endl;
+                    }
 
                     json msgJson;
 

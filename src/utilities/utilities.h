@@ -26,7 +26,13 @@ inline float calculateTargetD(int lane){
 }
 
 inline short calculateLane(double d){
-    return short(d / 4);
+    short lane = (d / 4);
+    if(lane < 0){
+        return 0;
+    } else if(lane >= num_lanes){
+        return num_lanes - 1;
+    }
+    return lane;
 }
 
 inline double calculateYaw(double ref_y, double ref_y_prev, double ref_x, double ref_x_prev){ // returns in radians

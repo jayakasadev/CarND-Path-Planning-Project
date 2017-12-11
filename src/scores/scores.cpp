@@ -50,12 +50,16 @@ void scores::reset(short lane){
 
 void scores::setFollow(short lane){
     // std::cout << "scores::setFollow" << std::endl;
+    lock.write_lock();
     this->behavior[lane] = FOLLOW;
+    lock.write_unlock();
 }
 
 void scores::setStop(short lane){
     // std::cout << "scores::setStop" << std::endl;
+    lock.write_lock();
     this->behavior[lane] = STOP;
+    lock.write_unlock();
 }
 
 void scores::setVelocity(short lane, double velocity){
@@ -66,7 +70,9 @@ void scores::setVelocity(short lane, double velocity){
     // std::cout << "released read lock" << std::endl;
     // velocity_lock.write_lock();
     // std::cout << "got write lock" << std::endl;
+    lock.write_lock();
     this->velocity[lane] = velocity;
+    lock.write_unlock();
     // std::cout << this->velocity[lane] << std::endl;
     // velocity_lock.write_unlock();
     // std::cout << "released write lock" << std::endl;
@@ -80,7 +86,9 @@ void scores::setDistanceFront(short lane, double distance){
     // std::cout << "released read lock" << std::endl;
     // distance_front_lock.write_lock();
     // std::cout << "got write lock" << std::endl;
+    lock.write_lock();
     this->distance_front[lane] = distance;
+    lock.write_unlock();
     // std::cout << this->distance_front[lane] << std::endl;
     // distance_front_lock.write_unlock();
     // std::cout << "released write lock" << std::endl;
@@ -94,7 +102,9 @@ void scores::setDistanceBack(short lane, double distance){
     // std::cout << "released read lock" << std::endl;
     // distance_back_lock.write_lock();
     // std::cout << "got write lock" << std::endl;
+    lock.write_lock();
     this->distance_back[lane] = distance;
+    lock.write_unlock();
     // std::cout << this->distance_back[lane] << std::endl;
     // distance_back_lock.write_unlock();
     // std::cout << "released write lock" << std::endl;
@@ -104,7 +114,9 @@ double scores::getVelocity(short lane){
     // std::cout << "scores::getVelocity" << std::endl;
     // velocity_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
+    lock.read_lock();
     double out = velocity[lane];
+    lock.read_unlock();
     // std::cout << out << std::endl;
     // velocity_lock.read_unlock();
     // std::cout << "released read lock" << std::endl;
@@ -115,7 +127,9 @@ vehicle_behavior scores::getBehavior(short lane){
     // std::cout << "scores::getBehavior" << std::endl;
     // behavior_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
+    lock.read_lock();
     vehicle_behavior out = behavior[lane];
+    lock.read_unlock();
     // std::cout << out << std::endl;
     // behavior_lock.read_unlock();
     // std::cout << "released read lock" << std::endl;
@@ -126,7 +140,9 @@ double scores::getDistanceFront(short lane){
     // std::cout << "scores::getDistanceFront" << std::endl;
     // distance_front_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
+    lock.read_lock();
     double out = distance_front[lane];
+    lock.read_unlock();
     // std::cout << out << std::endl;
     // distance_front_lock.read_unlock();
     // std::cout << "released read lock" << std::endl;
@@ -137,7 +153,9 @@ double scores::getDistanceBack(short lane){
     // std::cout << "scores::getDistanceBack" << std::endl;
     // distance_back_lock.read_lock();
     // std::cout << "got read lock" << std::endl;
+    lock.read_lock();
     double out = distance_back[lane];
+    lock.read_unlock();
     // std::cout << out << std::endl;
     // distance_back_lock.read_unlock();
     // std::cout << "released read lock" << std::endl;
@@ -151,11 +169,13 @@ void scores::printScores(){
     distance_front_lock.read_lock();
     distance_back_lock.read_lock();
      */
+    lock.read_lock();
     std::cout << "SCORES: " << std::endl;
     std::cout << "\tlane\t||\tbehavior\t||\tvelocity\t||\tdistance front\t||\tdistance back" << std::endl;
     for(short a = 0; a < num_lanes; a++){
         std::cout << "\t" << a << "\t||\t" << this->behavior[a] << "\t||\t" << velocity[a] << "\t||\t" << distance_front[a] << "\t||\t" << distance_back[a] << std::endl;
     }
+    lock.read_unlock();
     /*
     distance_back_lock.read_unlock();
     distance_front_lock.read_unlock();

@@ -6,7 +6,7 @@
 #define PATH_PLANNING_TRAJECTORY_GENERATOR_H
 
 #include <vector>
-#import "../Eigen-3.3/Eigen/Dense"
+#include "../Eigen-3.3/Eigen/Dense"
 #include "../constants/constants.h"
 #include "../map/map.h"
 
