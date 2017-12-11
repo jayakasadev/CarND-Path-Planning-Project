@@ -21,9 +21,10 @@ private:
     std::chrono::high_resolution_clock::time_point last_Seen;
 
     inline void checkOutdated() {
-        std::cout << "checkOutdated" << std::endl;
-        long time = (high_resolution_clock::now() - last_Seen).count(); // TODO this is returning a large number that ends up being larger than the window i set
-        std::cout << "time = " << time << std::endl;
+        // std::cout << "checkOutdated" << std::endl;
+        duration<double, std::milli> time_span = high_resolution_clock::now() - last_Seen;
+        short time = time_span.count(); // TODO this is returning a large number that ends up being larger than the window i set
+        // std::cout << "time = " << time << std::endl;
         if (time > search_field_timelimit) { // last
             velocity_d = 0;
             velocity_s = 0;

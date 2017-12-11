@@ -26,7 +26,7 @@ const short search_field_buffer = 5; // search above and below the buffer for ot
 
 const float search_field_decay = 0.85; // decay the search field size for each lane so I do not search too far
 
-const short search_field_timelimit = 3000; // forget the car if I have not seen it in 3 seconds
+const short search_field_timelimit = 1000; // forget the car if I have not seen it in 3 seconds
 
 // trajectory generation
 
