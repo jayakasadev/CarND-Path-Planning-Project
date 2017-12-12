@@ -7,6 +7,9 @@
 trajectory_option behavior_planner::calculate(short lane){
     cout << "behavior_planner::calculate" << endl;
     trajectory_option opt;
+    for(short a = 0; a < (search_period / refresh_rate); a++){
+        cout << "lane: " << lane << " a: " << a << endl;
+    }
     return opt;
 }
 
@@ -29,13 +32,13 @@ vector<VectorXd> behavior_planner::bestOption(){
         if(values->getBehavior(a) != STOP){ // only going to bother calculating if the lane is not stop
             if(driveMode == SPORT){
                 cout << "SPORT" << endl;
-                options.push_back(async([this, a]{ return this->calculateSport(a); }));
+                options.push_back(async(launch::async, [this, a]{ return this->calculateSport(a); }));
             } else if(driveMode == ECONOMY){
                 cout << "ECONOMY" << endl;
-                options.push_back(async([this, a]{ return this->calculateEconomy(a); }));
+                options.push_back(async(launch::async, [this, a]{ return this->calculateEconomy(a); }));
             } else {
                 // cout << "REGULAR" << endl;
-                options.push_back(async([this, a]{ return this->calculate(a); }));
+                options.push_back(async(launch::async, [this, a]{ return this->calculate(a); }));
             }
         }
     }
@@ -45,6 +48,7 @@ vector<VectorXd> behavior_planner::bestOption(){
     // this part is synchronous
     // cannot compare without the completed computations
     // this part is only as slow as the slowest calculation
+
     trajectory_option lowest = options[0].get();
 
     for(short a = 1; a < options.size(); a++){
