@@ -17,14 +17,14 @@
 using namespace Eigen;
 using namespace std;
 
-class trajectory_option{
-public:
-    float score;
+struct trajectory_option{
+    float score_s;
+    float score_d;
     VectorXd s;
     VectorXd d;
 
     trajectory_option(){
-        score = numeric_limits<float>::max();
+        score_s = score_d = numeric_limits<float>::max();
     }
     ~trajectory_option(){}
 };
@@ -56,6 +56,12 @@ private:
             sf_dot = values->getVelocity(lane);
         }
         // cout << " sf: " << sf << " sf_dot: " << sf_dot << endl;
+    }
+
+    inline double calcYVal(VectorXd x, double constant){
+        VectorXd c(6);
+        c << constant, pow(constant, 2), pow(constant, 3), pow(constant, 4), pow(constant, 5), pow(constant, 6);
+        return x.transpose() * c;
     }
 
     // cost functions

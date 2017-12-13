@@ -5,7 +5,7 @@
 #include "behavior_planner.h"
 
 double behavior_planner::cost(short lane, VectorXd &calculated){
-    // println("behavior_planner::cost");
+    cout << "behavior_planner::cost" << endl;
     return  0;
 }
 
@@ -39,11 +39,28 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
         VectorXd c_s(3);
         sharedCalc(time,car->getS(), car->getVelocityS(), car->getAccelerationS(), sf, sf_dot, sf_dot_dot, c_s);
 
+        if(c_s[0] >= max_jerk){
+            continue;
+        }
+
+        VectorXd s(6);
+        s << car->getS(), car->getVelocityS(), car->getAccelerationS(), c_s[0], c_s[1], c_s[2];
+
+        // calculate cost
+        cost(lane, c_s);
+
         VectorXd c_d(3);
         sharedCalc(time, car->getD(), car->getVelocityD(), car->getAccelerationD(), df, df_dot, df_dot_dot, c_d);
 
+        if(c_d[0] >= max_jerk){
+            continue;
+        }
+
+        VectorXd d(6);
+        d << car->getD(), car->getVelocityD(), car->getAccelerationD(), c_d[0], c_d[1], c_d[2];
         // calculate cost
-        // cost(lane, c);
+        cost(lane, c_d);
+
         cout << "jerk for S: " << c_s[0] << " snap: " << c_s[1] << " crackle: " << c_s[2] << endl;
         cout << "jerk for D: " << c_d[0] << " snap: " << c_d[1] << " crackle: " << c_d[2] << endl;
     }
@@ -55,7 +72,8 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
 trajectory_option behavior_planner::cityPlanning(short lane){
     cout << "behavior_planner::cityPlanning" << endl;
     trajectory_option option;
-    // calculate for s and d together
+    // calculate for s and d together by calculating the d first and using the selected time t to calculate s as well after
+
     return option;
 }
 
@@ -94,7 +112,7 @@ vector<VectorXd> behavior_planner::bestOption(){
             // cout << "lowest score so far: " << lowest.score << endl;
             // cout << "comparing it to this score: " << compare.score << endl;
         } catch (future_error &e){
-            println(e.what());
+            cout << e.what() << endl;
         }
     }
 

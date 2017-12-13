@@ -15,13 +15,15 @@ const float mph_to_mps = 0.44704; // 1 mph = 0.44704 m/s
 
 const float max_velocity_mps = 22.35199;
 
+const float max_jerk = 50;
+
+const float max_acceleration = 10;
+
 const float spacing = 22.35199;
 
 const float num_lanes = 3;
 
 // for sensor_fusion
-
-const short follow_buffer = 10; // if car in front is 10 m away, follow the car in front
 
 const short search_field_buffer = 5; // search above and below the buffer for other vehicles
 
@@ -33,7 +35,7 @@ const short search_field_timelimit = 500; // forget the car if I have not seen i
 
 const float refresh_rate = 0.02;
 
-const float barrier_rate = 0.3;
+const float barrier_rate = 0.2;
 
 const float velocity_barrier = max_velocity_mps * barrier_rate;
 
