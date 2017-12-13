@@ -5,6 +5,7 @@
 #ifndef PATH_PLANNING_CONSTANTS_H
 #define PATH_PLANNING_CONSTANTS_H
 
+#include <iostream>
 #include "../enums/drive_mode.h"
 
 // The max s value before wrapping around the track back to 0
@@ -26,19 +27,24 @@ const short search_field_buffer = 5; // search above and below the buffer for ot
 
 const float search_field_decay = 0.85; // decay the search field size for each lane so I do not search too far
 
-const short search_field_timelimit = 1000; // forget the car if I have not seen it in 3 seconds
+const short search_field_timelimit = 500; // forget the car if I have not seen it in .5 seconds
 
 // trajectory generation
 
 const float refresh_rate = 0.02;
 
-const float time_period = 1.0;
+const float barrier_rate = 0.3;
 
-const float search_period = 2.0;
+const float velocity_barrier = max_velocity_mps * barrier_rate;
+
+const float time_period = 1.0;
 
 const short num_points = time_period / refresh_rate;
 
 const drive_mode driveMode = REGULAR;
+
+// utility
+const auto println = [](const char  *message){ std::cout << message << std::endl;};
 
 
 #endif //PATH_PLANNING_CONSTANTS_H

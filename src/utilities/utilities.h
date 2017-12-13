@@ -39,8 +39,4 @@ inline double calculateYaw(double ref_y, double ref_y_prev, double ref_x, double
     return atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
 }
 
-inline int getNumPoints(float time_period){
-    return int(time_period / refresh_rate);
-}
-
 #endif //PATH_PLANNING_UTILITIES_H

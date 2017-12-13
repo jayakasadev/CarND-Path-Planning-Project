@@ -126,16 +126,17 @@ int main() {
                     // thread to run sensor_fusion
                     // sensorFusion.predict(sensor_fusion_data);
                     // thread sf(&sensorfusion::predict, sensorFusion, sensor_fusion_data);
-                    future<void> sf (async([&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);}));
+                    // consider a copy on write buffer for scores
+                    future<void> sf (async(launch::async, [&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);})); // launch instantly
                     // sensorFusion.predict(sensor_fusion_data);
 
                     // cout << "finished prediction" << endl;
 
                     // thread to run behavior_planner
-                    future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
+                    // future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
+                    // sf.get();
 
-                    sf.get();
-
+                    /*
                     try{
                         // wait to run trajectory
                         vector<VectorXd> s_d = bp.get();
@@ -144,6 +145,8 @@ int main() {
                     } catch (future_error &e){
                         cout << e.what() << endl;
                     }
+                     */
+                    vector<VectorXd> s_d = behaviorPlanner.bestOption(); // run on main thread
 
                     json msgJson;
 
