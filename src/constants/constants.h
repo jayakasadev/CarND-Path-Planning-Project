@@ -43,8 +43,5 @@ const short num_points = time_period / refresh_rate;
 
 const drive_mode driveMode = REGULAR;
 
-// utility
-const auto println = [](const char  *message){ std::cout << message << std::endl;};
-
 
 #endif //PATH_PLANNING_CONSTANTS_H

@@ -53,7 +53,7 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
 }
 
 trajectory_option behavior_planner::cityPlanning(short lane){
-    println("behavior_planner::cityPlanning");
+    cout << "behavior_planner::cityPlanning" << endl;
     trajectory_option option;
     // calculate for s and d together
     return option;
@@ -71,7 +71,8 @@ vector<VectorXd> behavior_planner::bestOption(){
             options.push_back(async(launch::async, [this, &lane]{return this->highwayPlanning(lane);}));
         } else {
             // city planning
-            options.push_back(async(launch::async, [this, &a]{return this->cityPlanning(a);}));
+            // do nothing for now
+            // options.push_back(async(launch::async, [this, &a]{return this->cityPlanning(a);}));
         }
     }
 
