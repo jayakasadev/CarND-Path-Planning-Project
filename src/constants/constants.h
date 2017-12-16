@@ -45,5 +45,13 @@ const short num_points = time_period / refresh_rate;
 
 const drive_mode driveMode = REGULAR;
 
+const float k_j = 1 / (max_jerk * max_jerk);
+
+const float k_d = 1 / 6;
+
+const float k_t = .5;
+
+const float k_s = 1 / spacing;
+
 
 #endif //PATH_PLANNING_CONSTANTS_H

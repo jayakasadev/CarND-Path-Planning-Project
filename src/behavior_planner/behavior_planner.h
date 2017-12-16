@@ -35,7 +35,7 @@ private:
     scores *values;
 
     inline void getSfVals(double &sf, double &sf_dot, short lane){
-        values->printScores();
+        // values->printScores();
         // car->print();
         // cout << "behavior: " << values->getBehavior(lane);
         vehicle_behavior behavior = values->getBehavior(lane);
@@ -58,19 +58,32 @@ private:
         // cout << " sf: " << sf << " sf_dot: " << sf_dot << endl;
     }
 
-    inline double calcYVal(VectorXd x, double constant){
-        VectorXd c(6);
-        c << constant, pow(constant, 2), pow(constant, 3), pow(constant, 4), pow(constant, 5), pow(constant, 6);
-        return x.transpose() * c;
+    inline double squareJerk(VectorXd x, double constant){
+        VectorXd c(3);
+        c << 6 * constant, 12 * pow(constant, 2), 20 * pow(constant, 3);
+        return pow(x.transpose() * c, 2);
     }
 
     // cost functions
+    inline double costS(short lane, double time, double diff, VectorXd &calculated){
+        // cout << "behavior_planner::costS" << endl;
+        return k_j * squareJerk(calculated, time) + k_t * time + k_s * pow(diff, 2);
+    }
 
-    double cost(short lane, VectorXd &calculated);
+    inline double costD(short lane, double time, double diff, VectorXd &calculated){
+        // cout << "behavior_planner::costD" << endl;
+        return k_j * squareJerk(calculated, time) + k_t * time + k_d * pow(diff, 2);
+    }
 
-    double costSport(short lane, VectorXd &calculated);
+    inline double costSport(short lane, VectorXd &calculated){
+        // println("behavior_planner::costSport");
+        return  0;
+    }
 
-    double costEconomy(short lane, VectorXd &calculated);
+    inline double costEconomy(short lane, VectorXd &calculated){
+        // println("behavior_planner::costEconomy");
+        return  0;
+    }
 
     // behavior based on velocity
 
