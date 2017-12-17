@@ -21,14 +21,12 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
         // cout << "sf: " << sf << " sf_dot: " << sf_dot << " sf_dot_dot: " << sf_dot_dot << endl;
         // generate matrices
         VectorXd c_s(3);
+        cout << "CALCULATE S" << endl;
         sharedCalc(time,car->getS(), car->getVelocityS(), car->getAccelerationS(), sf, sf_dot, sf_dot_dot, c_s);
-
+        // cout << c_s.transpose() << endl;
         if(c_s[0] >= max_jerk){
             continue;
         }
-
-        // VectorXd s(6);
-        // s << car->getS(), car->getVelocityS(), car->getAccelerationS(), c_s[0], c_s[1], c_s[2];
 
         // calculate cost
         float cost;
@@ -39,29 +37,36 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
         }
         if(cost < option.score_s){
             option.score_s = cost;
-            option.s = c_s;
+
+            VectorXd s(6);
+            s << car->getS(), car->getVelocityS(), car->getAccelerationS(), c_s[0], c_s[1], c_s[2];
+            option.s = s;
+            // cout << "S: " << s.transpose() << endl;
         }
-        cout << "jerk for S: " << c_s[0] << " snap: " << c_s[1] << " crackle: " << c_s[2] << endl;
-        cout << "cost: " << cost << endl;
+        // cout << "jerk for S: " << c_s[0] << " snap: " << c_s[1] << " crackle: " << c_s[2] << " cost: " << cost << endl;
 
         VectorXd c_d(3);
+        cout << "\tCALCULATE D" << endl;
         sharedCalc(time, car->getD(), car->getVelocityD(), car->getAccelerationD(), df, df_dot, df_dot_dot, c_d);
+        // cout << c_d.transpose() << endl;
 
         if(c_d[0] >= max_jerk){
             continue;
         }
 
-        VectorXd d(6);
-        d << car->getD(), car->getVelocityD(), car->getAccelerationD(), c_d[0], c_d[1], c_d[2];
+        double diff = df - car->getD();
         // calculate cost
-        cost = costD(lane, time, df, c_d);
+        cost = costD(lane, time, diff, c_d);
         if(cost < option.score_d){
             option.score_d = cost;
-            option.d = c_d;
+
+            VectorXd d(6);
+            d << car->getD(), car->getVelocityD(), car->getAccelerationD(), c_d[0], c_d[1], c_d[2];
+            option.d = d;
+            // cout << "D: " << d.transpose() << endl;
         }
 
-        cout << "jerk for D: " << c_d[0] << " snap: " << c_d[1] << " crackle: " << c_d[2] << endl;
-        cout << "cost: " << cost << endl;
+        // cout << "jerk for D: " << c_d[0] << " snap: " << c_d[1] << " crackle: " << c_d[2] << " cost: " << cost << endl;
     }
 
     // cout << "done" << endl;
@@ -82,42 +87,45 @@ vector<VectorXd> behavior_planner::bestOption(){
 
     for(short a = 0; a < num_lanes; a++){
         // select behavior based on velocity
-        short lane = a;
         // highway planning
-        if(velocity_barrier <= values->getVelocity(a)){
-            options.push_back(async(launch::async, [this, &lane]{return this->highwayPlanning(lane);}));
+        if(0 <= values->getVelocity(a)){ // TODO setup city planning code
+            options.push_back(async(launch::deferred, [this, a]{return this->highwayPlanning(a);}));
         } else {
             // city planning
             // do nothing for now
             // options.push_back(async(launch::async, [this, &a]{return this->cityPlanning(a);}));
         }
-        break;
     }
 
-    cout << "finished calculations: " << options.size() << endl;
+    // cout << "finished calculations: " << options.size() << endl;
 
     // this part is synchronous
     // cannot compare without the completed computations
     // this part is only as slow as the slowest calculation
 
     trajectory_option lowest = options[0].get();
-    /*
+
     for(short a = 1; a < options.size(); a++){
         // cout << "index: " << index << " a: " << a << endl;
         try{
             trajectory_option compare = options[a].get();
             if(lowest.score_s > compare.score_s){
-                lowest = compare;
+                lowest.score_s = compare.score_s;
+                lowest.s = compare.s;
             }
-            // cout << "lowest score so far: " << lowest.score << endl;
+
+            if(lowest.score_d > compare.score_d){
+                lowest.score_d = compare.score_d;
+                lowest.d = compare.d;
+            }
+            cout << "lowest s score so far: " << lowest.score_s << "\t\tlowest d score so far: " << lowest.score_d << endl;
             // cout << "comparing it to this score: " << compare.score << endl;
         } catch (future_error &e){
             cout << e.what() << endl;
         }
     }
-     */
 
-    cout << "picked the best option" << endl;
+    // cout << "picked the best option" << endl;
 
     return {lowest.s, lowest.d};
 }

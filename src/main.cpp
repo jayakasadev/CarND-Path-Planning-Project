@@ -88,9 +88,10 @@ int main() {
                     if(size < 2){
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
+                        return;
+                        /*
                         // reset the scores
                         values.reset(car.getLane());
-
                         // cars moving
                         // TODO get the last two points in the path and use them to calculate yaw, speed, s, d
                         // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
@@ -100,6 +101,7 @@ int main() {
 
                         // use the previous path's endpoint as a starting reference
                         // Redefine reference state as previous path end point
+
                         double ref_x = previous_path_x[size - 1];
                         double ref_y = previous_path_y[size - 1];
 
@@ -117,10 +119,11 @@ int main() {
                         cout << "calculated velocity: " << velocity << endl;
 
                         car.update(ref_x, ref_y, sAndD[0], sAndD[1], ref_yaw, velocity);
+                         */
                     }
                     // cout << "setup car" << endl;
                     // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
-                    car.print();
+                    // car.print();
                     // cout << "finised reset" << endl;
 
                     // thread to run sensor_fusion
@@ -148,10 +151,12 @@ int main() {
                      */
                     vector<VectorXd> s_d = behaviorPlanner.bestOption(); // run on main thread
 
+                    trajectory.calculatePoints(s_d[0], s_d[1]);
+
                     json msgJson;
 
-                    vector<double> next_x_vals;
-                    vector<double> next_y_vals;
+                    vector<double> next_x_vals = trajectory.getXVals();
+                    vector<double> next_y_vals = trajectory.getYVals();
 
                     // next_x_vals.push_back(car_x);
                     // next_x_vals.push_back(car_y);

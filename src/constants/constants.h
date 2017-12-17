@@ -5,7 +5,7 @@
 #ifndef PATH_PLANNING_CONSTANTS_H
 #define PATH_PLANNING_CONSTANTS_H
 
-#include <iostream>
+#include <math.h>
 #include "../enums/drive_mode.h"
 
 // The max s value before wrapping around the track back to 0
@@ -45,13 +45,13 @@ const short num_points = time_period / refresh_rate;
 
 const drive_mode driveMode = REGULAR;
 
-const float k_j = 1 / (max_jerk * max_jerk);
+const double k_j = (1 / (1.3 * pow(10, 8))) / 3;
 
-const float k_d = 1 / 6;
+const double k_d = (1 / pow(4 * (num_lanes - 1), 2)) / 3;
 
-const float k_t = .5;
+const double k_t = .5 / 3;
 
-const float k_s = 1 / spacing;
+const double k_s = (1 / pow(spacing, 2)) / 3;
 
 
 #endif //PATH_PLANNING_CONSTANTS_H

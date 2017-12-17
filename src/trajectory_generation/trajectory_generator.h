@@ -6,11 +6,13 @@
 #define PATH_PLANNING_TRAJECTORY_GENERATOR_H
 
 #include <vector>
+#include <iostream>
 #include "../Eigen-3.3/Eigen/Dense"
 #include "../constants/constants.h"
 #include "../map/map.h"
 
 using namespace Eigen;
+using namespace std;
 
 class trajectory_generator {
 private:
@@ -18,7 +20,7 @@ private:
     std::vector<double> y_vals;
     const map_data *mapData;
 
-    double calculatePoint(float t, VectorXd constants);
+    double calculatePoint(float &t, VectorXd &constants);
 
 public:
     trajectory_generator(const map_data &mapData){
@@ -26,7 +28,7 @@ public:
     }
     ~trajectory_generator(){}
 
-    void calculatePoints(VectorXd constants_S, VectorXd constants_D);
+    void calculatePoints(VectorXd &constants_S, VectorXd &constants_D);
 
     inline std::vector<double> getXVals(){
         return x_vals;
