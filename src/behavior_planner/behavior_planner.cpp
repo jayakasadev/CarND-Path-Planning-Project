@@ -20,8 +20,8 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
         // cout << "s: " << car->getS() << " s_dot: " << car->getVelocityS() << " s_dot_dot: " << car->getAccelerationS() << endl;
         // cout << "sf: " << sf << " sf_dot: " << sf_dot << " sf_dot_dot: " << sf_dot_dot << endl;
         // generate matrices
-        VectorXd c_s(3);
-        cout << "CALCULATE S" << endl;
+        VectorXd c_s = VectorXd::Zero(3);
+        // cout << "CALCULATE S" << endl;
         sharedCalc(time,car->getS(), car->getVelocityS(), car->getAccelerationS(), sf, sf_dot, sf_dot_dot, c_s);
         // cout << c_s.transpose() << endl;
         if(c_s[0] >= max_jerk){
@@ -38,15 +38,15 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
         if(cost < option.score_s){
             option.score_s = cost;
 
-            VectorXd s(6);
+            VectorXd s = VectorXd::Zero(6);
             s << car->getS(), car->getVelocityS(), car->getAccelerationS(), c_s[0], c_s[1], c_s[2];
             option.s = s;
             // cout << "S: " << s.transpose() << endl;
         }
-        // cout << "jerk for S: " << c_s[0] << " snap: " << c_s[1] << " crackle: " << c_s[2] << " cost: " << cost << endl;
+        cout << "jerk for S: " << c_s[0] << " snap: " << c_s[1] << " crackle: " << c_s[2] << " cost: " << cost << endl;
 
-        VectorXd c_d(3);
-        cout << "\tCALCULATE D" << endl;
+        VectorXd c_d = VectorXd::Zero(3);
+        // cout << "CALCULATE D" << endl;
         sharedCalc(time, car->getD(), car->getVelocityD(), car->getAccelerationD(), df, df_dot, df_dot_dot, c_d);
         // cout << c_d.transpose() << endl;
 
@@ -60,13 +60,13 @@ trajectory_option behavior_planner::highwayPlanning(short lane){
         if(cost < option.score_d){
             option.score_d = cost;
 
-            VectorXd d(6);
+            VectorXd d = VectorXd::Zero(6);
             d << car->getD(), car->getVelocityD(), car->getAccelerationD(), c_d[0], c_d[1], c_d[2];
             option.d = d;
             // cout << "D: " << d.transpose() << endl;
         }
 
-        // cout << "jerk for D: " << c_d[0] << " snap: " << c_d[1] << " crackle: " << c_d[2] << " cost: " << cost << endl;
+        cout << "jerk for D: " << c_d[0] << " snap: " << c_d[1] << " crackle: " << c_d[2] << " cost: " << cost << endl;
     }
 
     // cout << "done" << endl;
