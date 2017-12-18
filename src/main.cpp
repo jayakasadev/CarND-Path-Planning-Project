@@ -88,8 +88,6 @@ int main() {
                     if(size < 2){
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
-                        return;
-                        /*
                         // reset the scores
                         values.reset(car.getLane());
                         // cars moving
@@ -119,7 +117,6 @@ int main() {
                         cout << "calculated velocity: " << velocity << endl;
 
                         car.update(ref_x, ref_y, sAndD[0], sAndD[1], ref_yaw, velocity);
-                         */
                     }
                     // cout << "setup car" << endl;
                     // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
@@ -130,8 +127,8 @@ int main() {
                     // sensorFusion.predict(sensor_fusion_data);
                     // thread sf(&sensorfusion::predict, sensorFusion, sensor_fusion_data);
                     // consider a copy on write buffer for scores
-                    future<void> sf (async(launch::async, [&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);})); // launch instantly
-                    // sensorFusion.predict(sensor_fusion_data);
+                    // future<void> sf (async(launch::async, [&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);})); // launch instantly
+                    sensorFusion.predict(sensor_fusion_data);
 
                     // cout << "finished prediction" << endl;
 
@@ -149,6 +146,7 @@ int main() {
                         cout << e.what() << endl;
                     }
                      */
+                    // sf.get(); // gonna wait until it is done
                     vector<VectorXd> s_d = behaviorPlanner.bestOption(); // run on main thread
 
                     trajectory.calculatePoints(s_d[0], s_d[1]);
