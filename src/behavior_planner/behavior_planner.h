@@ -37,10 +37,21 @@ private:
     driver *car;
     scores *values;
 
-    double norm_s;
-    double norm_v;
-    double norm_d;
-    double norm_j;
+    // weights for the cost function
+    // max value is 7500 for a bad score
+    // best score is 0
+
+    const float k_j = 1;
+
+    const float k_d = 39.0625;
+
+    const float k_t = 156.25;
+
+    const float k_s = -4;
+
+    const float k_s_bias = 2500;
+
+    const float k_v = 25;
 
     inline void getSfVals(double &sf, double &sf_dot, short lane){
         // values->printScores();
@@ -89,15 +100,21 @@ private:
         return x.transpose() * c + s_dot_dot * time_period + s_dot;
     }
 
-    inline double accelerationF(VectorXd &x, double s_dot_dot){
+    inline double accelerationAvg(VectorXd &x, double s_dot_dot){
         double sum = 0;
-        for(short a = 0; a <= num_points; a++){
+        for(short a = 1; a <= num_points; a++){
             VectorXd c(3);
             double constant = refresh_rate * a;
             c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
-            sum += x.transpose() * c + s_dot_dot;
+            sum +=  x.transpose() * c + s_dot_dot;
         }
-        return (sum / (num_points+1));
+        return (sum / double(num_points));
+    }
+
+    inline double accelerationF(VectorXd &x, double constant, double s_dot_dot){
+        VectorXd c(3);
+        c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
+        return x.transpose() * c + s_dot_dot;
     }
 
     inline double jerkF(double average_acceleration){
@@ -106,7 +123,7 @@ private:
         c << 1 , constant, pow(constant, 2) / 2;
         return x.transpose() * c;
         */
-        return average_acceleration / .02;
+        return (average_acceleration / refresh_rate);
     }
 
     inline double squareJerk(VectorXd &x, double constant){
@@ -116,28 +133,28 @@ private:
     }
 
     // cost functions
-    inline double costS_Vel(short lane, double diff, VectorXd &calculated){
+    inline double costV(short lane, double time, double diff, VectorXd &calculated){
         cout << "behavior_planner::costS_Vel\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << time_period << ", ks = " << k_s << ", diff^2 = " << pow(diff, 2)
+             << ", kt = " << k_t << ", time = " << (time - time_period) << ", kv = " << k_v << ", diff^2 = " << pow(diff, 2)
              << " ]" << endl;
         // cout << calculated.transpose() << endl;
-        return k_j * norm_j * squareJerk(calculated, time_period) + k_t * time_period + k_s * norm_v * pow(diff, 2);
+        return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_v * pow(diff, 2);
     }
 
-    inline double costS(short lane, double diff, VectorXd &calculated){
+    inline double costS(short lane, double time, double diff, VectorXd &calculated){
         cout << "behavior_planner::costS\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << time_period << ", ks = " << k_s << ", diff^2 = " << pow(diff, 2)
+             << ", kt = " << k_t << ", time = " << (time - time_period) << ", ks = " << k_s << ", diff^2 = " << pow(diff, 2)
              << " ]" << endl;
         // cout << calculated.transpose() << endl;
-        return k_j * norm_j * squareJerk(calculated, time_period) + k_t * time_period + k_s * norm_s * pow(diff, 2);
+        return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_s * pow(diff, 2) + k_s_bias;
     }
 
-    inline double costD(short lane, double diff, VectorXd &calculated){
+    inline double costD(short lane, double time, double diff, VectorXd &calculated){
         cout << "\tbehavior_planner::costD\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << time_period << ", kd = " << k_d << ", diff^2 = " << pow(diff, 2)
+             << ", kt = " << k_t << ", time = " << (time - time_period) << ", kd = " << k_d << ", diff^2 = " << pow(diff, 2)
              << " ]" << endl;
         // cout << calculated.transpose() << endl;
-        return k_j * norm_j * squareJerk(calculated, time_period) + k_t * time_period + k_d * norm_d * pow(diff, 2);
+        return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_d * pow(diff, 2);
     }
 
     // behavior based on velocity
@@ -170,13 +187,6 @@ public:
     behavior_planner(driver &car, scores &values){
         this->car = &car;
         this->values = &values;
-
-        // normalization of costs
-        this->norm_s = (1.0d / pow(spacing, 2));
-        this->norm_v = (1.0d / pow(max_velocity_mps, 2));
-        this->norm_d = (1.0d / pow((num_lanes - 1) * 4, 2));
-        this->norm_j  = (1.0d / pow(max_jerk - .01, 2));
-        cout << "norm_s: " << norm_s << "\tnorm_v: " << norm_v << "\tnorm_d: " << norm_d << "\tnorm_j: " << norm_j << endl;
     }
 
     ~behavior_planner(){}

@@ -67,16 +67,32 @@ public:
         return velocity_s;
     }
 
+    inline void setVelocityS(double velocity_s){
+        this->velocity_s = velocity_s;
+    }
+
     inline double getAccelerationS(){
         return acceleration_s;
+    }
+
+    inline void setAccelerationS(double acceleration_s){
+        this->acceleration_s = acceleration_s;
     }
 
     inline double getVelocityD(){
         return velocity_d;
     }
 
+    inline void setVelocityD(double velocity_d){
+        this->velocity_d = velocity_d;
+    }
+
     inline double getAccelerationD(){
         return acceleration_d;
+    }
+
+    inline void setAccelerationD(double acceleration_d){
+        this->acceleration_d = acceleration_d;
     }
 
     inline std::vector<double> getPredicted(){

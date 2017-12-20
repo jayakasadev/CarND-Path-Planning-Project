@@ -39,14 +39,6 @@ const float time_period = 1.0;
 
 const short num_points = time_period / refresh_rate;
 
-const drive_mode driveMode = REGULAR;
-
-const double k_j = 1.0d / 3.0d;
-
-const double k_d = 1.0d / 3.0d;
-
-const double k_t = 1.0d / 3.0d;
-
-const double k_s = 1.0d / 3.0d;
+const drive_mode driveMode = REGULAR; // this is the median score
 
 #endif //PATH_PLANNING_CONSTANTS_H
