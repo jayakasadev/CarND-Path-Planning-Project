@@ -21,7 +21,7 @@ inline double calculateFutureS(double s){
     return fmod(s, max_s);
 }
 
-inline float calculateTargetD(int lane){
+inline short calculateTargetD(short lane){
     return 4 * lane + 2;
 }
 

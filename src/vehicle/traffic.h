@@ -23,7 +23,7 @@ private:
     inline void checkOutdated() {
         // std::cout << "checkOutdated" << std::endl;
         duration<double, std::milli> time_span = high_resolution_clock::now() - last_Seen;
-        short time = time_span.count(); // TODO this is returning a large number that ends up being larger than the window i set
+        short time = time_span.count();
         // std::cout << "time = " << time << std::endl;
         if (time > search_field_timelimit) { // last
             velocity_d = 0;

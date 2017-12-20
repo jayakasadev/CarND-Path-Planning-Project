@@ -88,6 +88,7 @@ int main() {
                     if(size < 2){
                         car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     } else {
+                        return;
                         // reset the scores
                         values.reset(car.getLane());
                         // cars moving
@@ -120,7 +121,7 @@ int main() {
                     }
                     // cout << "setup car" << endl;
                     // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
-                    // car.print();
+                    car.print();
                     // cout << "finised reset" << endl;
 
                     // thread to run sensor_fusion
