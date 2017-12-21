@@ -19,23 +19,25 @@ using namespace std;
 class sensorfusion {
 private:
     std::unordered_map<short, traffic *> hashmap;
-    driver *car;
     scores *values;
+    driver * car;
+    map_data *mapData;
 
-    inline float getSearchField(short lane) {
-        float field = abs(lane - car->getLane()) * search_field_buffer + search_field_buffer;
-        if(lane - car->getLane() == 0){
+    inline float getSearchField(short lane, double car_lane) {
+        float field = abs(lane - car_lane) * search_field_buffer + search_field_buffer;
+        if(lane - car_lane == 0){
             return field;
         }
         return search_field_decay * field;
     }
 
-    void setScore(double &s, double &d, double &velocity);
+    void setScore(double car_s, double car_d, double s, double d, double velocity);
 
 public:
-    sensorfusion(driver &car, scores &scores){
+    sensorfusion(driver &car, scores &scores, map_data &mapData){
         this->car = &car;
         this->values = &scores;
+        this->mapData = &mapData;
     }
 
     ~sensorfusion(){
@@ -46,7 +48,7 @@ public:
         hashmap.clear();
     }
 
-    void predict(nlohmann::basic_json<> &sensor_fusion);
+    void predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y);
 };
 
 

@@ -29,7 +29,7 @@ const short search_field_buffer = 5; // search above and below the buffer for ot
 
 const float search_field_decay = 0.85; // decay the search field size for each lane so I do not search too far
 
-const short search_field_timelimit = 500; // forget the car if I have not seen it in .5 seconds
+const short search_field_timelimit = 100; // forget the car if I have not seen it in .1 seconds
 
 // trajectory generation
 
@@ -40,5 +40,9 @@ const float time_period = 1.0;
 const short num_points = time_period / refresh_rate;
 
 const drive_mode driveMode = REGULAR; // this is the median score
+
+const float velocity_barrier = 0.2; // anything below 10mph is generated differently
+
+const float scalar = .00007114;
 
 #endif //PATH_PLANNING_CONSTANTS_H

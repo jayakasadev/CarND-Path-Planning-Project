@@ -38,7 +38,7 @@ int main() {
 
     scores values(1);
 
-    sensorfusion sensorFusion(car, values);
+    sensorfusion sensorFusion(car, values, mapData);
 
     behavior_planner behaviorPlanner(car, values);
 
@@ -81,16 +81,16 @@ int main() {
                     // Sensor Fusion Data, a list of all other cars on the same side of the road.
                     auto sensor_fusion_data = j[1]["sensor_fusion"];
 
+                    // future<void> sf(async(launch::deferred, [&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);})); // launch instantly
+                    car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
+                    car.print();
+                    // reset the scores
+                    values.reset(car.getLane());
+                    sensorFusion.predict(sensor_fusion_data, previous_path_x, previous_path_y);
+
                     int size = previous_path_x.size();
 
-                    // turn the car on and start moving
-
-                    if(size < 2){
-                        car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
-                        car.print();
-                    } else {
-                        // reset the scores
-                        values.reset(car.getLane());
+                    if(size > 0 || values.getBehavior(car.getLane()) == STOP){
                         // cars moving
                         // TODO get the last two points in the path and use them to calculate yaw, speed, s, d
                         // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
@@ -123,6 +123,7 @@ int main() {
                         car.print();
                         return;
                     }
+
                     // cout << "setup car" << endl;
                     // car.update(car_x, car_y, car_s, car_d, car_yaw, car_speed);
                     // cout << "finised reset" << endl;
@@ -131,26 +132,12 @@ int main() {
                     // sensorFusion.predict(sensor_fusion_data);
                     // thread sf(&sensorfusion::predict, sensorFusion, sensor_fusion_data);
                     // consider a copy on write buffer for scores
-                    // future<void> sf (async(launch::async, [&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);})); // launch instantly
-                    sensorFusion.predict(sensor_fusion_data);
 
                     // cout << "finished prediction" << endl;
 
                     // thread to run behavior_planner
                     // future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
                     // sf.get();
-
-                    /*
-                    try{
-                        // wait to run trajectory
-                        vector<VectorXd> s_d = bp.get();
-
-                        cout << "s: " << s_d[0].transpose() << " d: " << s_d[1].transpose() << endl;
-                    } catch (future_error &e){
-                        cout << e.what() << endl;
-                    }
-                     */
-                    // sf.get(); // gonna wait until it is done
                     vector<VectorXd> s_d = behaviorPlanner.bestOption(); // run on main thread
 
                     trajectory.calculatePoints(s_d[0], s_d[1]);
@@ -163,7 +150,7 @@ int main() {
                     // next_x_vals.push_back(car_x);
                     // next_x_vals.push_back(car_y);
 
-                    // cout << "about to set x and y vals" << endl;
+                    cout << "next_x_vals size : " << next_x_vals.size() << " next_y_vals size : " << next_y_vals.size() << endl;
 
                     // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
                     msgJson["next_x"] = next_x_vals;

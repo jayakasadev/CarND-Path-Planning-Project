@@ -37,8 +37,8 @@ void traffic::update(double x, double y, double vx, double vy, double s, double 
     }
     last_Seen = high_resolution_clock::now(); // update last seen time
 
-    ps = calculateFutureS(s + this->velocity_s * time_period);
-    pd = d + this->velocity_d * time_period;
+    // ps = calculateFutureS(s + this->velocity_s * time_period);
+    // pd = d + this->velocity_d * time_period;
 
     this->vx = vx;
     this->vy = vy;

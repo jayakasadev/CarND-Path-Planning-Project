@@ -38,8 +38,6 @@ public:
 
     void setStop(short lane);
 
-    void setBehavior(short lane, vehicle_behavior action);
-
     void setVelocity(short lane, double velocity);
 
     void setDistanceFront(short lane, double distance);

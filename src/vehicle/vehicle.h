@@ -99,12 +99,20 @@ public:
         return {ps, pd};
     }
 
-    inline double getPredictedVelocityS(){
-        return velocity_s + acceleration_s * time_period;
+    inline double getPredictedVelocityS(double time){
+        return velocity_s + acceleration_s * time;
     }
 
-    inline double getPredictedVelocityD(){
-        return velocity_d + acceleration_d * time_period;
+    inline double getPredictedVelocityD(double time){
+        return velocity_d + acceleration_d * time;
+    }
+
+    inline double getPredictedS(double time){
+        return s + velocity_s * time;
+    }
+
+    inline double getPredictedD(double time){
+        return d + velocity_d * time;
     }
 
     inline void print(){
