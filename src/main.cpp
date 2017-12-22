@@ -40,9 +40,11 @@ int main() {
 
     sensorfusion sensorFusion(car, values, mapData);
 
-    behavior_planner behaviorPlanner(car, values);
+    trajectory_option option;
 
-    trajectory_generator trajectory(mapData);
+    behavior_planner behaviorPlanner(car, values, option);
+
+    trajectory_generator trajectory(mapData, option);
 
 
     h.onMessage([&mapData, &car, &values, &sensorFusion, &trajectory, &behaviorPlanner](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
@@ -138,9 +140,9 @@ int main() {
                     // thread to run behavior_planner
                     // future<vector<VectorXd>> bp(async([&behaviorPlanner]{return behaviorPlanner.bestOption();}));
                     // sf.get();
-                    vector<VectorXd> s_d = behaviorPlanner.bestOption(); // run on main thread
+                    behaviorPlanner.bestOption(); // run on main thread
 
-                    trajectory.calculatePoints(s_d[0], s_d[1]);
+                    trajectory.calculatePoints();
 
                     json msgJson;
 

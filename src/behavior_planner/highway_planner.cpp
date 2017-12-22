@@ -1,16 +1,16 @@
 #include "highway_planner.h"
 
-void highway_planner::calculateS(short lane, double &score_s, VectorXd &s){
+void highway_planner::calculateS(short lane, double &score_s, double &time_s, VectorXd &s){
     cout << "behavior_planner::calculateHighwayS\t" << lane << endl;
     double sf = 0, sf_dot = 0, sf_dot_dot = 0;
     getSfVals(sf, sf_dot, lane);
-    VectorXd c_s;
+    VectorXd c_s = VectorXd::Zero(3);
     for(short interval = 0; interval < spacing; interval++){
         double sf_interval = sf + interval;
         cout << "############# sf_inteval: " << sf_interval << endl;
         for(double time = 1.0; time <= 3.0; time += refresh_rate) {
             // cout << "CALCULATE S" << endl;// generate matrices
-            c_s = VectorXd::Zero(3);
+
             sharedCalc(time, car->getS(), car->getVelocityS(), car->getAccelerationS(), sf_interval, sf_dot, sf_dot_dot, c_s);
             // cout << c_s.transpose() << endl;
 
@@ -25,7 +25,7 @@ void highway_planner::calculateS(short lane, double &score_s, VectorXd &s){
                 cout << "\tacceleration_f: " << acceleration_f << endl;
 
                 if(abs(jerk_f) < max_jerk && abs(acceleration_f) < max_acceleration){
-                    // cout << "B ";
+                    cout << "B ";
                     double cost;
                     if (values->getBehavior(lane) == KEEP_VELOCITY) {
                         // cout << "C ";
@@ -41,28 +41,29 @@ void highway_planner::calculateS(short lane, double &score_s, VectorXd &s){
                         cost = costS(lane, time, diff, c_s);
                     }
                     cout << "\tcost: " << cost << endl;
-                    // cout << "E ";
+                    cout << "E ";
                     if (cost < score_s) {
-                        // cout << "F " << endl;
+                        cout << "F " << endl;
                         score_s = cost;
-                        VectorXd s_temp = VectorXd::Zero(6);
-                        s_temp << car->getS(), car->getVelocityS(), car->getAccelerationS(), c_s[0], c_s[1], c_s[2];
+                        time_s = time;
+                        VectorXd s_temp = VectorXd::Zero(3);
+                        s_temp << c_s[0], c_s[1], c_s[2];
                         s = s_temp;
                         // cout << "S: " << s.transpose() << endl;
                     }
-                    // cout << "G ";
+                    cout << "G ";
                 }
             }
-            // cout << endl;
+            cout << endl;
         }
     }
 }
 
-void highway_planner::calculateD(short lane, double &score_d, VectorXd &d){
+void highway_planner::calculateD(short lane, double &score_d, double &time_d, VectorXd &d){
     cout << "behavior_planner::calculateHighwayD\t" << lane << endl;
     double df = calculateTargetD(lane), df_dot = 0, df_dot_dot = 0;
     cout << "\tdf: " << df;
-    VectorXd c_d;
+    VectorXd c_d = VectorXd::Zero(3);
     for(double time = 1.0; time <= 3.0; time+=refresh_rate) {
         cout << "\ttime: " << time;
         c_d = VectorXd::Zero(3);
@@ -86,11 +87,13 @@ void highway_planner::calculateD(short lane, double &score_d, VectorXd &d){
                 double cost = costD(lane, time, diff, c_d);
                 cout << "\tcost: " << cost << endl;
                 if (cost < score_d) {
+                    cout << "D: " << d.transpose() << endl;
                     score_d = cost;
+                    time_d = time;
                     VectorXd d_temp = VectorXd::Zero(6);
-                    d_temp << car->getD(), car->getVelocityD(), car->getAccelerationD(), c_d[0], c_d[1], c_d[2];
+                    d_temp << c_d[0], c_d[1], c_d[2];
                     d = d_temp;
-                    // cout << "D: " << d.transpose() << endl;
+
                 }
             }
         }

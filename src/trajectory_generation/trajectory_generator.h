@@ -10,6 +10,7 @@
 #include "../Eigen-3.3/Eigen/Dense"
 #include "../constants/constants.h"
 #include "../map/map.h"
+#include "../trajectory_option/trajectory_option.h"
 
 using namespace Eigen;
 using namespace std;
@@ -18,17 +19,19 @@ class trajectory_generator {
 private:
     std::vector<double> x_vals;
     std::vector<double> y_vals;
-    const map_data *mapData;
+    const map_data * mapData;
+    trajectory_option * option;
 
     double calculatePoint(float &t, VectorXd &constants);
 
 public:
-    trajectory_generator(const map_data &mapData){
+    trajectory_generator(const map_data &mapData, trajectory_option &option){
         this->mapData = &mapData;
+        this->option = &option;
     }
     ~trajectory_generator(){}
 
-    void calculatePoints(VectorXd &constants_S, VectorXd &constants_D);
+    void calculatePoints();
 
     inline std::vector<double> getXVals(){
         return x_vals;

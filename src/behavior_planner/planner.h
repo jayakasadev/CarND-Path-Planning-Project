@@ -47,39 +47,39 @@ protected:
         }
     }
 
+    ~planner(){}
+
     inline void getSfVals(double &sf, double &sf_dot, short lane){
         // values->printScores();
         // car->print();
-        // cout << "behavior: " << values->getBehavior(lane);
+        // std::cout << "behavior: " << values->getBehavior(lane);
         vehicle_behavior behavior = values->getBehavior(lane);
         if(behavior == vehicle_behavior::STOP) {
-            // cout << "STOP " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
+            // std::cout << "STOP " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
             sf = car->getS() + values->getDistanceFront(lane);
         } else if(behavior == vehicle_behavior::FOLLOW) {
-            // cout << "FOLLOW " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
+            // std::cout << "FOLLOW " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
             sf = car->getS() + values->getDistanceFront(lane) + values->getVelocity(lane) * time_period;
             sf_dot = values->getVelocity(lane);
         } else if(behavior == vehicle_behavior::MERGE){
-            // cout << "MERGE " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
+            // std::cout << "MERGE " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
             sf = car->getS() + values->getDistanceFront(lane);
             sf_dot = values->getVelocity(lane);
         } else{
-            // cout << "KEEP VELOCITY " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
+            // std::cout << "KEEP VELOCITY " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
             sf = car->getS() +  + values->getDistanceFront(lane);
             sf_dot = values->getVelocity(lane);
         }
-        // cout << " sf: " << sf << " sf_dot: " << sf_dot << endl;
+        // std::cout << " sf: " << sf << " sf_dot: " << sf_dot << std::endl;
     }
 
-    ~planner(){}
-
-    inline double positionF(VectorXd &x, double constant, double s, double s_dot, double s_dot_dot){
-        VectorXd c(3);
+    inline double positionF(Eigen::VectorXd &x, double constant, double s, double s_dot, double s_dot_dot){
+        Eigen::VectorXd c(3);
         c << pow(constant, 3) / 6, pow(constant, 4) / 24, pow(constant, 5) / 120;
         return x.transpose() * c + .5 * s_dot_dot * pow(constant, 2) + s_dot * constant + s;
     }
 
-    inline double velocityF(VectorXd &x, double s_dot, double s_dot_dot){
+    inline double velocityF(Eigen::VectorXd &x, double s_dot, double s_dot_dot){
         /*
         double sum = 0;
         for(short a = 0; a <= num_points; a++){
@@ -90,16 +90,16 @@ protected:
         }
         return (sum / (num_points + 1)); // average velocity
          */
-        VectorXd c(3);
+        Eigen::VectorXd c(3);
         // double constant = refresh_rate * a;
         c << pow(time_period, 2) / 2, pow(time_period, 3) / 6, 5 * pow(time_period, 4) / 24;
         return x.transpose() * c + s_dot_dot * time_period + s_dot;
     }
 
-    inline double accelerationAvg(VectorXd &x, double s_dot_dot){
+    inline double accelerationAvg(Eigen::VectorXd &x, double s_dot_dot){
         double sum = 0;
         for(short a = 1; a <= num_points; a++){
-            VectorXd c(3);
+            Eigen::VectorXd c(3);
             double constant = refresh_rate * a;
             c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
             sum +=  x.transpose() * c + s_dot_dot;
@@ -107,8 +107,8 @@ protected:
         return (sum / double(num_points));
     }
 
-    inline double accelerationF(VectorXd &x, double constant, double s_dot_dot){
-        VectorXd c(3);
+    inline double accelerationF(Eigen::VectorXd &x, double constant, double s_dot_dot){
+        Eigen::VectorXd c(3);
         c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
         return x.transpose() * c + s_dot_dot;
     }
@@ -122,43 +122,44 @@ protected:
         return (average_acceleration / refresh_rate);
     }
 
-    inline double squareJerk(VectorXd &x, double constant){
-        VectorXd c(3);
+    inline double squareJerk(Eigen::VectorXd &x, double constant){
+        Eigen::VectorXd c(3);
         c << 1 , constant, pow(constant, 2) / 2;
         return pow(x.transpose() * c, 2);
     }
 
     // cost functions
-    inline double costV(short lane, double time, double diff, VectorXd &calculated){
-        cout << "behavior_planner::costS_Vel\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
+    inline double costV(short lane, double time, double diff, Eigen::VectorXd &calculated){
+        std::cout << "planner::costS_Vel\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
              << ", kt = " << k_t << ", time = " << (time - time_period) << ", kv = " << k_v << ", diff^2 = " << pow(diff, 2)
-             << " ]" << endl;
+             << " ]" << std::endl;
         // cout << calculated.transpose() << endl;
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_v * pow(diff, 2);
     }
 
-    inline double costS(short lane, double time, double diff, VectorXd &calculated){
-        cout << "behavior_planner::costS\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
+    inline double costS(short lane, double time, double diff, Eigen::VectorXd &calculated){
+        std::cout << "planner::costS\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
              << ", kt = " << k_t << ", time = " << (time - time_period) << ", ks = " << k_s << ", diff^2 = " << pow(diff, 2)
-             << " ]" << endl;
+             << " ]" << std::endl;
         // cout << calculated.transpose() << endl;
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_s * pow(diff, 2) + k_s_bias;
     }
 
-    inline double costD(short lane, double time, double diff, VectorXd &calculated){
-        cout << "\tbehavior_planner::costD\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
+    inline double costD(short lane, double time, double diff, Eigen::VectorXd &calculated){
+        std::cout << "\tplanner::costD\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
              << ", kt = " << k_t << ", time = " << (time - time_period) << ", kd = " << k_d << ", diff^2 = " << pow(diff, 2)
-             << " ]" << endl;
+             << " ]" << std::endl;
         // cout << calculated.transpose() << endl;
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_d * pow(diff, 2);
     }
 
-    inline void sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, VectorXd &c){
-        // cout << "sharedCalc: [ time = " << time << ", x = " << x << ", x_dot = " << x_dot << ", x_dot_dot = " << x_dot_dot << ", xf = " << xf << ", xf_dot = " << xf_dot << ", xf_dot_dot = " << xf_dot_dot << endl;
-        // cout << "\nA^-1:\n" << Ai << endl;
+    inline void sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, Eigen::VectorXd &c){
+        // std::cout << "sharedCalc: [ time = " << time << ", x = " << x << ", x_dot = " << x_dot << ", x_dot_dot = "
+        // << x_dot_dot << ", xf = " << xf << ", xf_dot = " << xf_dot << ", xf_dot_dot = " << xf_dot_dot << std::endl;
+        // std::cout << "\nA^-1:\n" << Ai << std::endl;
 
-        MatrixXd A = MatrixXd::Zero(3, 3);
-        VectorXd B = VectorXd::Zero(3);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(3, 3);
+        Eigen::VectorXd B = Eigen::VectorXd::Zero(3);
 
         A << pow(time, 3), pow(time, 4), pow(time, 5),
                 3 * pow(time, 2), 4 *pow(time, 3), 5 * pow(time, 4),
@@ -168,10 +169,10 @@ protected:
                 (xf_dot - (x_dot + x_dot_dot * time)),
                 (xf_dot_dot - x_dot_dot);
 
-        // cout << "B = " << B.transpose() << endl;
+        // std::cout << "B = " << B.transpose() << std::endl;
 
         c = A.inverse() * B;
-        // cout << c.transpose() << endl;
+        // std::cout << c.transpose() << std::endl;
     }
 };
 

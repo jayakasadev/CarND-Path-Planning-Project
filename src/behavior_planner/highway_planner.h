@@ -16,9 +16,9 @@ public:
 
     ~highway_planner(){}
 
-    void calculateS(short lane, double &score_s, VectorXd &s);
+    void calculateS(short lane, double &score_s, double &time_s, VectorXd &s);
 
-    void calculateD(short lane, double &score_d, VectorXd &d);
+    void calculateD(short lane, double &score_d, double &time_d, VectorXd &d);
 
 };
 

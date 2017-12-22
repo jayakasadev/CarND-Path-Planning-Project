@@ -15,34 +15,25 @@
 #include "../vehicle/driver.h"
 #include "city_planner.h"
 #include "highway_planner.h"
+#include "../trajectory_option/trajectory_option.h"
 
 using namespace Eigen;
 using namespace std;
-
-struct trajectory_option{
-    double score_s;
-    double score_d;
-    VectorXd s;
-    VectorXd d;
-
-    trajectory_option(){
-        this->score_s = numeric_limits<float>::max();
-        this->score_d = numeric_limits<float>::max();
-        this->s = VectorXd::Zero(6);
-        this->d = VectorXd::Zero(6);
-    }
-    ~trajectory_option(){}
-};
 
 class behavior_planner {
 private:
     highway_planner *highwayPlanner;
     city_planner *cityPlanner;
     scores *values;
+    trajectory_option * option;
+    driver * car;
 
 public:
-    behavior_planner(driver &car, scores &values){
+    behavior_planner(driver &car, scores &values, trajectory_option &option){
         this->values = &values;
+        this->option = &option;
+        this->car = &car;
+
         this->highwayPlanner = new highway_planner(car, values);
         this->cityPlanner = new city_planner(car, values);
     }
@@ -52,7 +43,7 @@ public:
         delete cityPlanner;
     }
 
-    vector<VectorXd> bestOption();
+    void bestOption();
 };
 
 
