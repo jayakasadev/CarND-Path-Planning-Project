@@ -13,8 +13,8 @@
 #include "../enums/vehicle_behavior.h"
 #include "../scores/scores.h"
 #include "../vehicle/driver.h"
-#include "city_planner.h"
-#include "highway_planner.h"
+#include "planning/city_planner.h"
+#include "planning/highway_planner.h"
 #include "../trajectory_option/trajectory_option.h"
 
 using namespace Eigen;
@@ -22,28 +22,23 @@ using namespace std;
 
 class behavior_planner {
 private:
-    highway_planner *highwayPlanner;
-    city_planner *cityPlanner;
-    scores *values;
-    trajectory_option * option;
-    driver * car;
+    vector<highway_planner> highwayPlanner;
+    vector<city_planner> cityPlanner;
+    scores * values;
 
 public:
-    behavior_planner(driver &car, scores &values, trajectory_option &option){
+    behavior_planner(driver &car, scores &values){
         this->values = &values;
-        this->option = &option;
-        this->car = &car;
 
-        this->highwayPlanner = new highway_planner(car, values);
-        this->cityPlanner = new city_planner(car, values);
+        for(short a = 0; a < num_lanes; a++){
+            highwayPlanner.push_back(highway_planner(car, values, a));
+            cityPlanner.push_back(city_planner(car, values, a));
+        }
     }
 
-    ~behavior_planner(){
-        delete highwayPlanner;
-        delete cityPlanner;
-    }
+    ~behavior_planner(){}
 
-    void bestOption();
+    vector<trajectory_option> plan();
 };
 
 

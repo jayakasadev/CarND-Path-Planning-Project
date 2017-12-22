@@ -10,20 +10,20 @@ double trajectory_generator::calculatePoint(float &t, VectorXd &constants){
     return x.transpose() * constants;
 }
 
-void trajectory_generator::calculatePoints(){
+void trajectory_generator::calculatePoints(trajectory_option &s_option, trajectory_option &d_option){
     x_vals.clear();
     y_vals.clear();
 
-    float max_time = max(option->timeS, option->timeD);
+    // float max_time = max(s_option.time, d_option.time);
 
-    for(short a = 1;a <= (max_time / refresh_rate); a++){
+    for(short a = 1; a <= num_points_to_gen; a++){
         float time = a * refresh_rate;
-        double s = calculatePoint(time, *option->s);
-        double d = calculatePoint(time, *option->d);
+        double s = calculatePoint(time, *s_option.vector);
+        double d = calculatePoint(time, *d_option.vector);
 
         std::vector<double> xy = mapData->getXY(s, d);
-        cout << "s: " << s << " || d: " << d << " time = " << time << endl;
-        // cout << "x: " << xy[0] << " || y: " << xy[1] << "\n" << endl;
+        cout << "[ s: " << s << "\td: " << d << "\ttime = " << time << " ]" << endl;
+        cout << "[ x: " << xy[0] << "\ty: " << xy[1] << " ]" << endl;
         x_vals.push_back(xy[0]);
         y_vals.push_back(xy[1]);
     }

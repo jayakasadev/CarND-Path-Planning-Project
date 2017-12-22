@@ -9,16 +9,17 @@
 
 class highway_planner : public planner{// behavior based on velocity
 public:
-    highway_planner(driver &car, scores &values){
+    highway_planner(driver &car, scores &values, short lane){
         this->car = &car;
         this->values = &values;
+        this->lane = lane;
     }
 
     ~highway_planner(){}
 
-    void calculateS(short lane, double &score_s, double &time_s, VectorXd &s);
+    void calculateS();
 
-    void calculateD(short lane, double &score_d, double &time_d, VectorXd &d);
+    void calculateD();
 
 };
 

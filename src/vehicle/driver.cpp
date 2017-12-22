@@ -6,7 +6,7 @@
 
 void driver::update(double x, double y, double s, double d, double yaw, double speed){
 
-    this->velocity_s = speed * mph_to_mps; // convert mph to m/s
+    this->velocity_s = speed ; // convert mph to m/s
     /*
     if(first){
         this->velocity_s = speed * mph_to_mps; // convert mph to m/s
@@ -30,7 +30,7 @@ void driver::update(double x, double y, double s, double d, double yaw, double s
     this->s = s;
     this->d = d;
 
-    this->yaw = deg2rad(yaw);
+    this->yaw = yaw;
 
     ps = calculateFutureS(s + this->velocity_s * time_period + .5 * this->acceleration_s * pow(time_period, 2));
     pd = d + this->velocity_d * time_period + .5 * this->acceleration_d * pow(time_period, 2);

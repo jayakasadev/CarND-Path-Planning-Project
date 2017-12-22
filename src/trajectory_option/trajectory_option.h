@@ -8,25 +8,48 @@
 #include <limits>
 #include "../Eigen-3.3/Eigen/Dense"
 
-struct trajectory_option{
+class trajectory_option{
+private:
+    bool first;
 public:
-    Eigen::VectorXd * s;
-    Eigen::VectorXd * d;
-    double scoreS;
-    double scoreD;
-    double timeS;
-    double timeD;
+    Eigen::VectorXd * vector;
+    double score;
+    double time;
 
     trajectory_option(){
-
-        scoreS = 100000.0d;
-        scoreD = 100000.0d;
-
-        timeS = 0;
-        timeD = 0;
+        first = true;
     }
 
     ~trajectory_option(){}
+
+    void reset(double x, double x_dot, double x_dot_dot){
+        // std::cout << "trajectory_option::reset";
+        if(!first){
+            delete vector;
+        }
+        first = false;
+        score = 100000.0d;
+        time = 0.0d;
+        vector = new Eigen::VectorXd(6);
+        (*vector)[0] = x;
+        (*vector)[1] = x_dot;
+        (*vector)[2] = x_dot_dot;
+        // std::cout << (*vector).transpose()  << std::endl;
+    }
+
+    void update(Eigen::VectorXd &xf, double time, double score){
+        // std::cout << "trajectory_option::update\tscore:" << score << "\ttime:" << time << "\t";
+        if(!first) {
+            (*vector)[3] = xf[0];
+            (*vector)[4] = xf[1];
+            (*vector)[5] = xf[2];
+
+            this->time = time;
+            this->score = score;
+            // std::cout << (*vector).transpose();
+        }
+        // std::cout << std::endl;
+    }
 };
 
 #endif //PATH_PLANNING_TRAJECTORY_OPTION_H

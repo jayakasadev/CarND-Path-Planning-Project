@@ -63,14 +63,14 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basi
         double vy = sensor_fusion[a][4]; // longitudinal velocity
         double s = sensor_fusion[a][5]; // s value of the ath car
         if(d >= 0 && d <= num_lanes * 4){ // only care for vehicles in lanes that i can go in
-            cout << id << " || vx = " << vx << " || vy = " << vy << endl;
+            // cout << id << " || vx = " << vx << " || vy = " << vy << endl;
             // cout << "map: " << hashmap.size() << endl;
             if(hashmap.find(id) == hashmap.end()){
                 hashmap[id] = new traffic(); // add new element
             }
             hashmap.at(id)->update(x, y, vx, vy, s, d);
 
-            hashmap.at(id)->print();
+            // hashmap.at(id)->print();
 
             // score the vehicles here
             double velocity = hashmap.at(id)->getVelocityS();
@@ -85,6 +85,7 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basi
         }
     }
 
+    /*
     if(previous_path_x.size() > 0){ // do more predictions on my path if there is a path
         vector<future<void>> options;
 
@@ -130,13 +131,14 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basi
                 }
             }));
         }
-        cout << "options size: " << options.size() << endl;
+        // cout << "options size: " << options.size() << endl;
         // thread sf([this, ref(values)]{values->printScores();});
 
         for(short a = 0; a < options.size(); a++){
             options[a].get();
         }
     }
+     */
 
-    values->printScores(); // print the values as a test for now
+    // values->printScores(); // print the values as a test for now
 }

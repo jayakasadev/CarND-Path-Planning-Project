@@ -35,7 +35,7 @@ inline short calculateLane(double d){
     return lane;
 }
 
-inline double calculateYaw(double ref_y, double ref_y_prev, double ref_x, double ref_x_prev){ // returns in radians
+inline double calculateYaw(double &ref_y, double &ref_y_prev, double &ref_x, double &ref_x_prev){ // returns in radians
     return atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
 }
 

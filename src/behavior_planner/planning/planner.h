@@ -4,15 +4,33 @@
 #include <functional>
 #include <iostream>
 
-#include "../constants/constants.h"
-#include "../Eigen-3.3/Eigen/Dense"
-#include "../scores/scores.h"
-#include "../vehicle/driver.h"
+#include "../../constants/constants.h"
+#include "../../Eigen-3.3/Eigen/Dense"
+#include "../../scores/scores.h"
+#include "../../vehicle/driver.h"
+#include "../../trajectory_option/trajectory_option.h"
 
 using namespace Eigen;
 using namespace std;
 
 class planner{
+public:
+    trajectory_option option_s;
+    trajectory_option option_d;
+    short lane;planner(){
+        // setting the score function based on drive mode
+        if(driveMode == REGULAR){
+            scoreFunction = [](double score){ return scalar * pow(score - 3750, 2);}; // favor median scores
+        } else if(driveMode == SPORT){
+            scoreFunction = [](double score){ return -score + 7500;}; // favor larger legal scores
+        } else {
+            // score function does nothing special
+            scoreFunction = [](double score){ return score;};
+        }
+    }
+
+    ~planner(){}
+
 protected:
     std::function<double(double)> scoreFunction;
 
@@ -34,20 +52,6 @@ protected:
 
     driver *car;
     scores *values;
-
-    planner(){
-        // setting the score function based on drive mode
-        if(driveMode == REGULAR){
-            scoreFunction = [](double score){ return scalar * pow(score - 3750, 2);}; // favor median scores
-        } else if(driveMode == SPORT){
-            scoreFunction = [](double score){ return -score + 7500;}; // favor larger legal scores
-        } else {
-            // score function does nothing special
-            scoreFunction = [](double score){ return score;};
-        }
-    }
-
-    ~planner(){}
 
     inline void getSfVals(double &sf, double &sf_dot, short lane){
         // values->printScores();
@@ -130,25 +134,31 @@ protected:
 
     // cost functions
     inline double costV(short lane, double time, double diff, Eigen::VectorXd &calculated){
+        /*
         std::cout << "planner::costS_Vel\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
              << ", kt = " << k_t << ", time = " << (time - time_period) << ", kv = " << k_v << ", diff^2 = " << pow(diff, 2)
              << " ]" << std::endl;
+        */
         // cout << calculated.transpose() << endl;
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_v * pow(diff, 2);
     }
 
     inline double costS(short lane, double time, double diff, Eigen::VectorXd &calculated){
+        /*
         std::cout << "planner::costS\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
              << ", kt = " << k_t << ", time = " << (time - time_period) << ", ks = " << k_s << ", diff^2 = " << pow(diff, 2)
              << " ]" << std::endl;
+        */
         // cout << calculated.transpose() << endl;
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_s * pow(diff, 2) + k_s_bias;
     }
 
     inline double costD(short lane, double time, double diff, Eigen::VectorXd &calculated){
+        /*
         std::cout << "\tplanner::costD\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
              << ", kt = " << k_t << ", time = " << (time - time_period) << ", kd = " << k_d << ", diff^2 = " << pow(diff, 2)
              << " ]" << std::endl;
+        */
         // cout << calculated.transpose() << endl;
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_d * pow(diff, 2);
     }

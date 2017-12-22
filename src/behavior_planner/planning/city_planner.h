@@ -11,9 +11,10 @@
 class city_planner : public planner{// behavior based on velocity
 public:
 
-    city_planner(driver &car, scores &values){
+    city_planner(driver &car, scores &values, short lane){
         this->car = &car;
         this->values = &values;
+        this->lane = lane;
     }
 
     ~city_planner(){}

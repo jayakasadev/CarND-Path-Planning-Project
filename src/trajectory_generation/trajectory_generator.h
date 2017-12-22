@@ -20,18 +20,18 @@ private:
     std::vector<double> x_vals;
     std::vector<double> y_vals;
     const map_data * mapData;
-    trajectory_option * option;
+    short num_points_to_gen;
 
     double calculatePoint(float &t, VectorXd &constants);
 
 public:
-    trajectory_generator(const map_data &mapData, trajectory_option &option){
+    trajectory_generator(const map_data &mapData){
         this->mapData = &mapData;
-        this->option = &option;
+        num_points_to_gen = num_points;
     }
     ~trajectory_generator(){}
 
-    void calculatePoints();
+    void calculatePoints(trajectory_option &s_option, trajectory_option &d_option);
 
     inline std::vector<double> getXVals(){
         return x_vals;
@@ -39,6 +39,11 @@ public:
 
     inline std::vector<double> getYVals(){
         return y_vals;
+    }
+
+    inline void adjustNumPoints(double existing){
+        num_points_to_gen = num_points;
+        num_points_to_gen -= existing;
     }
 
 };
