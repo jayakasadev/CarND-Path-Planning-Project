@@ -50,7 +50,7 @@ void sensorfusion::setScore(double car_s, double car_d, double s, double d, doub
     // cout << "setScore Completed" << endl;
 }
 
-void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y){
+void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
     // cout << "sensor_fusion::predict" << endl;
     // read everything into the hash_map and score the lane it is in
 
@@ -68,7 +68,7 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basi
             if(hashmap.find(id) == hashmap.end()){
                 hashmap[id] = new traffic(); // add new element
             }
-            hashmap.at(id)->update(x, y, vx, vy, s, d);
+            hashmap.at(id)->update(vx, vy, s, d, size);
 
             // hashmap.at(id)->print();
 

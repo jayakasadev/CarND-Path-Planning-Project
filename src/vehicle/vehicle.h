@@ -11,8 +11,6 @@
 
 struct vehicle{
 protected:
-    double x;
-    double y;
 
     double s;
     double d;
@@ -20,30 +18,22 @@ protected:
     double ps;
     double pd;
 
-    double yaw;
-
     double velocity_s; // in m/s
     double velocity_d; // in m/s
 
     double acceleration_s; // in m/s^2
     double acceleration_d; // in m/s^2
 
-    bool first;
-
 public:
     vehicle(){
-        x = 0;
-        y = 0;
         s = 0;
         d = 0;
         ps = 0;
         pd = 0;
-        yaw = 0;
         velocity_s = 0;
         velocity_d = 0;
         acceleration_s = 0;
         acceleration_d = 0;
-        first = true;
     }
     ~vehicle(){}
 
@@ -53,10 +43,6 @@ public:
 
     inline double getD(){
         return d;
-    }
-
-    inline double getYaw(){
-        return yaw;
     }
 
     inline short getLane(){
@@ -96,8 +82,6 @@ public:
     }
 
     inline std::vector<double> getPredicted(){
-        ps = calculateFutureS(s + this->velocity_s * time_period + .5 * this->acceleration_s * pow(time_period, 2));
-        pd = d + this->velocity_d * time_period + .5 * this->acceleration_d * pow(time_period, 2);
         return {ps, pd};
     }
 
@@ -118,9 +102,8 @@ public:
     }
 
     inline void print(){
-        std::cout << "[ s = " << s << ", d = " << d << ", yaw = " << yaw
-                  << ", velocity_s = " << velocity_s << ", acceleration_s = " << acceleration_s
-                  << ", velocity_d = " << velocity_d << ", acceleration_d = " << acceleration_d
+        std::cout << "[ s = " << s << ", d = " << d << ", velocity_s = " << velocity_s << ", acceleration_s = "
+                  << acceleration_s << ", velocity_d = " << velocity_d << ", acceleration_d = " << acceleration_d
                   << ", predicted_s = " << ps << ", predicted_d = " << pd << " ]" << std::endl;
     }
 };

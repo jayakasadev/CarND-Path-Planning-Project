@@ -13,13 +13,13 @@ const float max_s = 6945.554;
 
 const double mph_to_mps = 0.44704; // 1 mph = 0.44704 m/s
 
-const double max_velocity_mps = 22;
+const double max_velocity_mps = 49.99 * mph_to_mps;
 
 const float max_jerk = 50;
 
 const float max_acceleration = 10;
 
-const float spacing = 22;
+const float spacing = 49.99 * mph_to_mps;
 
 const float num_lanes = 3;
 
@@ -33,7 +33,7 @@ const short search_field_timelimit = 100; // forget the car if I have not seen i
 
 // trajectory generation
 
-const float refresh_rate = 0.02;
+const double refresh_rate = 0.02;
 
 const float time_period = 1.0;
 

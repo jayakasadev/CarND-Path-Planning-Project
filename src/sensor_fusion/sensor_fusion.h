@@ -48,7 +48,7 @@ public:
         hashmap.clear();
     }
 
-    void predict(nlohmann::basic_json<> &sensor_fusion, nlohmann::basic_json<> &previous_path_x, nlohmann::basic_json<> &previous_path_y);
+    void predict(nlohmann::basic_json<> &sensor_fusion, double size);
 };
 
 

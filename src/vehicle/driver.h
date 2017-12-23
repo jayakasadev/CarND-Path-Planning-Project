@@ -15,7 +15,9 @@ public:
 
     ~driver(){}
 
-    void update(double x, double y, double s, double d, double yaw, double speed);
+    void initialize(double s, double d, double speed);
+
+    void update(double s, double s_dot, double s_dot_dot, double d, double d_dot, double d_dot_dot);
 
     void print();
 };

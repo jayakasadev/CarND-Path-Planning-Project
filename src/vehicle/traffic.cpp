@@ -4,7 +4,7 @@
 
 #include "traffic.h"
 
-void traffic::update(double x, double y, double vx, double vy, double s, double d){
+void traffic::update(double vx, double vy, double s, double d, double size){
     // std::cout << "traffic::update" << std::endl;
     // print();
     if(first){
@@ -24,7 +24,7 @@ void traffic::update(double x, double y, double vx, double vy, double s, double 
 
         // std::cout << "acceleration_s " << this->acceleration_s << std::endl;
 
-        temp = ((d - this->d) / refresh_rate);
+        temp = ((d - this->d) / ((num_points - size) * refresh_rate));
         // std::cout << "temp : " << temp << " velocity_d : " << velocity_d << std::endl;
         // this->acceleration_d = (temp - this->velocity_d) / time_span.count();
         // std::cout << "acceleration_d " << this->acceleration_d << std::endl;
@@ -39,12 +39,6 @@ void traffic::update(double x, double y, double vx, double vy, double s, double 
 
     // ps = calculateFutureS(s + this->velocity_s * time_period);
     // pd = d + this->velocity_d * time_period;
-
-    this->vx = vx;
-    this->vy = vy;
-
-    this->x = x;
-    this->y = y;
 
     this->s = s;
     this->d = d;

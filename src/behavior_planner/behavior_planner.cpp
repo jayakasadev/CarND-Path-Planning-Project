@@ -1,23 +1,23 @@
 #include "behavior_planner.h"
 
 vector<trajectory_option> behavior_planner::plan(){
-    // cout << "behavior_planner::bestOption" << endl;
+    cout << "behavior_planner::bestOption" << endl;
     vector<future<void>> options;
     vector<planner*> planners;
 
     for(short a = 0; a < num_lanes; a++){
         // select behavior based on velocity
         // highway planning
-        if(0 <= values->getVelocity(a)){
+        if((velocity_barrier * max_velocity_mps) <= car->getVelocityS()){
             planners.push_back(&highwayPlanner[a]);
-            options.push_back(async(launch::async, [this, a]{ highwayPlanner[a].calculateS();}));
-            options.push_back(async(launch::async, [this, a]{ highwayPlanner[a].calculateD();}));
+            options.push_back(async(launch::deferred, [this, a]{ highwayPlanner[a].calculateS();}));
+            options.push_back(async(launch::deferred, [this, a]{ highwayPlanner[a].calculateD();}));
             // highwayPlanner[a].calculateS();
             // highwayPlanner[a].calculateD();
         } else {
-            // TODO implement city planning
-            // do nothing for now
-            // options.push_back(async(launch::async, [this, &a]{return this->cityPlanning(a);}));
+            planners.push_back(&cityPlanner[a]);
+            options.push_back(async(launch::deferred, [this, a]{ cityPlanner[a].calculate();}));
+            // cityPlanner[a].calculate();
         }
     }
 
@@ -44,9 +44,12 @@ vector<trajectory_option> behavior_planner::plan(){
         // cout << "comparing it to this score: " << compare.score << endl;
     }
 
-    cout << "picked the best option" << endl;
-    cout << "S: " << (*lowest->option_s.vector).transpose() << endl;
-    cout << "D: " << (*lowest->option_d.vector).transpose() << endl;
+    // cout << "picked the best option" << endl;
+    cout << "S: ";
+    lowest->option_s.print();
+    cout << "D: ";
+    lowest->option_d.print();
+
 
     return {lowest->option_s, lowest->option_d};
 }

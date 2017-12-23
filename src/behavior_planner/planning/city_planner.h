@@ -10,14 +10,17 @@
 
 class city_planner : public planner{// behavior based on velocity
 public:
-
     city_planner(driver &car, scores &values, short lane){
+        // cout << "city_planner" << endl;
         this->car = &car;
+        // car.print();
         this->values = &values;
         this->lane = lane;
     }
 
     ~city_planner(){}
+
+    void calculate();
 };
 
 

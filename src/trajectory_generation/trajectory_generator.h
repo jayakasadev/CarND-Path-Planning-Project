@@ -21,12 +21,28 @@ private:
     std::vector<double> x_vals;
     std::vector<double> y_vals;
     const map_data * mapData;
+    double sf;
+    double df;
+    double sf_dot;
+    double df_dot;
+    double sf_dot_dot;
+    double df_dot_dot;
+    VectorXd *t;
 
-    double calculatePoint(float &t, VectorXd &constants);
+    double calculatePoint(double &t, VectorXd &constants);
 
 public:
     trajectory_generator(const map_data &mapData){
         this->mapData = &mapData;
+        t = new VectorXd(6);
+
+        sf = 0;
+        sf_dot = 0;
+        sf_dot_dot = 0;
+
+        df = 0;
+        df_dot = 0;
+        df_dot_dot = 0;
     }
     ~trajectory_generator(){}
 
@@ -40,6 +56,13 @@ public:
         return y_vals;
     }
 
+    inline vector<double> sfVals(){
+        return {sf, sf_dot, sf_dot_dot};
+    }
+
+    inline vector<double> dfVals(){
+        return {df, df_dot, df_dot_dot};
+    }
 };
 
 

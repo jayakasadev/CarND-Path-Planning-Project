@@ -15,8 +15,9 @@ public:
     Eigen::VectorXd * vector;
     double score;
     double time;
-    // double velocity;
-    // double acceleration;
+    // double xf;
+    // double xf_dot;
+    // double xf_dot_dot;
 
     trajectory_option(){
         first = true;
@@ -32,6 +33,10 @@ public:
         first = false;
         score = 100000.0d;
         time = 0.0d;
+        // xf = 0;
+        // xf_dot = 0;
+        // xf_dot_dot = 0;
+
         vector = new Eigen::VectorXd(6);
         (*vector)[0] = x;
         (*vector)[1] = x_dot;
@@ -51,6 +56,10 @@ public:
             // std::cout << (*vector).transpose();
         }
         // std::cout << std::endl;
+    }
+
+    void print(){
+        std::cout << "vector: "  << (*vector).transpose() << "\ttime: " << time << "\tscore: " << score << std::endl;
     }
 };
 
