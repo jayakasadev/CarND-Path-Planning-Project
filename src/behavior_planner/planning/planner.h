@@ -17,7 +17,13 @@ class planner{
 public:
     trajectory_option option_s;
     trajectory_option option_d;
-    short lane;planner(){
+
+    // double s_v;
+    // double s_a;
+    // double d_v;
+    // double d_a;
+
+    planner(){
         // setting the score function based on drive mode
         if(driveMode == REGULAR){
             scoreFunction = [](double score){ return scalar * pow(score - 3750, 2);}; // favor median scores
@@ -52,6 +58,7 @@ protected:
 
     driver *car;
     scores *values;
+    short lane;
 
     inline void getSfVals(double &sf, double &sf_dot, short lane){
         // values->printScores();
@@ -78,7 +85,7 @@ protected:
     }
 
     inline double positionF(Eigen::VectorXd &x, double constant, double s, double s_dot, double s_dot_dot){
-        Eigen::VectorXd c(3);
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         c << pow(constant, 3) / 6, pow(constant, 4) / 24, pow(constant, 5) / 120;
         return x.transpose() * c + .5 * s_dot_dot * pow(constant, 2) + s_dot * constant + s;
     }
@@ -94,7 +101,7 @@ protected:
         }
         return (sum / (num_points + 1)); // average velocity
          */
-        Eigen::VectorXd c(3);
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         // double constant = refresh_rate * a;
         c << pow(time_period, 2) / 2, pow(time_period, 3) / 6, 5 * pow(time_period, 4) / 24;
         return x.transpose() * c + s_dot_dot * time_period + s_dot;
@@ -102,8 +109,8 @@ protected:
 
     inline double accelerationAvg(Eigen::VectorXd &x, double s_dot_dot){
         double sum = 0;
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         for(short a = 1; a <= num_points; a++){
-            Eigen::VectorXd c(3);
             double constant = refresh_rate * a;
             c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
             sum +=  x.transpose() * c + s_dot_dot;
@@ -112,7 +119,7 @@ protected:
     }
 
     inline double accelerationF(Eigen::VectorXd &x, double constant, double s_dot_dot){
-        Eigen::VectorXd c(3);
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
         return x.transpose() * c + s_dot_dot;
     }
@@ -163,7 +170,7 @@ protected:
         return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_d * pow(diff, 2);
     }
 
-    inline void sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot, Eigen::VectorXd &c){
+    inline Eigen::VectorXd sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot){
         // std::cout << "sharedCalc: [ time = " << time << ", x = " << x << ", x_dot = " << x_dot << ", x_dot_dot = "
         // << x_dot_dot << ", xf = " << xf << ", xf_dot = " << xf_dot << ", xf_dot_dot = " << xf_dot_dot << std::endl;
         // std::cout << "\nA^-1:\n" << Ai << std::endl;
@@ -181,7 +188,7 @@ protected:
 
         // std::cout << "B = " << B.transpose() << std::endl;
 
-        c = A.inverse() * B;
+        return A.inverse() * B;
         // std::cout << c.transpose() << std::endl;
     }
 };

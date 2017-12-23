@@ -7,19 +7,20 @@
 void driver::update(double x, double y, double s, double d, double yaw, double speed){
 
     this->velocity_s = speed ; // convert mph to m/s
+
     /*
     if(first){
-        this->velocity_s = speed * mph_to_mps; // convert mph to m/s
+        this->velocity_s = speed; // convert mph to m/s
         // this->velocity_d = 0;
-        // first = false;
+        first = false;
     } else {
         // calculate acceleration
-        double temp = speed * mph_to_mps;
-        // this->acceleration_s = (temp - this->velocity_s) / refresh_rate;
+        double temp = speed;
+        this->acceleration_s = (temp - this->velocity_s) / interval;
         this->velocity_s = temp;
 
-        // temp = (d - this->d) / refresh_rate;
-        // this->acceleration_d = (temp - this->velocity_d) / refresh_rate;
+        // temp = (d - this->d) / interval;
+        // this->acceleration_d = (temp - this->velocity_d) / interval;
         // this->velocity_d = temp;
     }
     */

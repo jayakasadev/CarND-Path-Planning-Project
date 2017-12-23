@@ -25,10 +25,12 @@ private:
     vector<highway_planner> highwayPlanner;
     vector<city_planner> cityPlanner;
     scores * values;
+    driver * car;
 
 public:
     behavior_planner(driver &car, scores &values){
         this->values = &values;
+        this->car = &car;
 
         for(short a = 0; a < num_lanes; a++){
             highwayPlanner.push_back(highway_planner(car, values, a));

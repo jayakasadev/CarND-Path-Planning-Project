@@ -15,6 +15,8 @@ public:
     Eigen::VectorXd * vector;
     double score;
     double time;
+    // double velocity;
+    // double acceleration;
 
     trajectory_option(){
         first = true;

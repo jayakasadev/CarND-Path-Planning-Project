@@ -1,9 +1,9 @@
 #include "behavior_planner.h"
 
 vector<trajectory_option> behavior_planner::plan(){
-    cout << "behavior_planner::bestOption" << endl;
+    // cout << "behavior_planner::bestOption" << endl;
     vector<future<void>> options;
-    vector<planner *> planners;
+    vector<planner*> planners;
 
     for(short a = 0; a < num_lanes; a++){
         // select behavior based on velocity
@@ -12,6 +12,8 @@ vector<trajectory_option> behavior_planner::plan(){
             planners.push_back(&highwayPlanner[a]);
             options.push_back(async(launch::async, [this, a]{ highwayPlanner[a].calculateS();}));
             options.push_back(async(launch::async, [this, a]{ highwayPlanner[a].calculateD();}));
+            // highwayPlanner[a].calculateS();
+            // highwayPlanner[a].calculateD();
         } else {
             // TODO implement city planning
             // do nothing for now
@@ -30,25 +32,21 @@ vector<trajectory_option> behavior_planner::plan(){
         options[a].get();
     }
 
-    planner *lowest = planners[0];
+    planner * lowest = planners[0];
 
     // cout << "lowest s score so far: " << lowest->option_s.score << "\t\tlowest d score so far: " << lowest->option_d.score << endl;
     for(short a = 1; a < planners.size(); a++){
         // cout << "a: " << a << endl;
-        try{
-            if(lowest->option_s.score + lowest->option_d.score > (*planners[a]).option_s.score  + (*planners[a]).option_s.score){
-                lowest = planners[a];
-            }
-            // cout << "lowest s score so far: " << lowest->option_s.score << "\t\tlowest d score so far: " << lowest->option_d.score << endl;
-            // cout << "comparing it to this score: " << compare.score << endl;
-        } catch (future_error &e){
-            cout << e.what() << endl;
+        if(lowest->option_s.score + lowest->option_d.score > (*planners[a]).option_s.score  + (*planners[a]).option_s.score){
+            lowest = planners[a];
         }
+        // cout << "lowest s score so far: " << lowest->option_s.score << "\t\tlowest d score so far: " << lowest->option_d.score << endl;
+        // cout << "comparing it to this score: " << compare.score << endl;
     }
 
-    // cout << "picked the best option" << endl;
-    // cout << "S: " << (*lowest->option_s.vector).transpose() << endl;
-    // cout << "D: " << (*lowest->option_d.vector).transpose() << endl;
+    cout << "picked the best option" << endl;
+    cout << "S: " << (*lowest->option_s.vector).transpose() << endl;
+    cout << "D: " << (*lowest->option_d.vector).transpose() << endl;
 
     return {lowest->option_s, lowest->option_d};
 }

@@ -11,6 +11,7 @@
 #include "../constants/constants.h"
 #include "../map/map.h"
 #include "../trajectory_option/trajectory_option.h"
+#include "../vehicle/driver.h"
 
 using namespace Eigen;
 using namespace std;
@@ -20,18 +21,16 @@ private:
     std::vector<double> x_vals;
     std::vector<double> y_vals;
     const map_data * mapData;
-    short num_points_to_gen;
 
     double calculatePoint(float &t, VectorXd &constants);
 
 public:
     trajectory_generator(const map_data &mapData){
         this->mapData = &mapData;
-        num_points_to_gen = num_points;
     }
     ~trajectory_generator(){}
 
-    void calculatePoints(trajectory_option &s_option, trajectory_option &d_option);
+    void calculatePoints(trajectory_option &s_option, trajectory_option &d_option, short size);
 
     inline std::vector<double> getXVals(){
         return x_vals;
@@ -39,11 +38,6 @@ public:
 
     inline std::vector<double> getYVals(){
         return y_vals;
-    }
-
-    inline void adjustNumPoints(double existing){
-        num_points_to_gen = num_points;
-        num_points_to_gen -= existing;
     }
 
 };

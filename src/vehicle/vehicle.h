@@ -96,6 +96,8 @@ public:
     }
 
     inline std::vector<double> getPredicted(){
+        ps = calculateFutureS(s + this->velocity_s * time_period + .5 * this->acceleration_s * pow(time_period, 2));
+        pd = d + this->velocity_d * time_period + .5 * this->acceleration_d * pow(time_period, 2);
         return {ps, pd};
     }
 

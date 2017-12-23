@@ -36,7 +36,8 @@ inline short calculateLane(double d){
 }
 
 inline double calculateYaw(double &ref_y, double &ref_y_prev, double &ref_x, double &ref_x_prev){ // returns in radians
-    return atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+    // std::cout << "utilities::calculateYaw\tref_y: " << ref_y << "\tref_y_prev: "<< ref_y_prev << "\tref_x:" << ref_x << "\tref_x_prev: " << ref_x_prev << std::endl;
+    return atan2((ref_y - ref_y_prev), (ref_x - ref_x_prev));
 }
 
 #endif //PATH_PLANNING_UTILITIES_H
