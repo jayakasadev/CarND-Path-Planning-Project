@@ -91,7 +91,7 @@ void highway_planner::calculateD(){
             if(abs(jerk_f) < max_jerk && abs(acceleration_f) < max_acceleration) {
                 double diff = df - car->getD();
                 double cost = costD(time, diff, c_d);
-                // cost = scoreFunction(cost);
+                cost = scoreFunction(cost);
                 // cout << "\tcost: " << cost << endl;
                 if (cost < option_d.score) {
                     // cout << "\tcost: " << cost << "\ttime:" << time << endl;

@@ -1,7 +1,7 @@
 #include "city_planner.h"
 
 void city_planner::calculate(){
-    // cout << "city_planner::calculate\tlane: " << lane << endl;
+    cout << "city_planner::calculate\tlane: " << lane << endl;
     // car->print();
     option_s.reset(car->getS(), car->getVelocityS(), car->getAccelerationS());
     option_d.reset(car->getD(), car->getVelocityD(), car->getAccelerationD());
@@ -31,7 +31,7 @@ void city_planner::calculate(){
                 double diff_d = df - car->getD();
                 double diff_s = sf - car->getS();
                 double cost = costSD(time, diff_s, diff_d, c_d);
-                // cost = scoreFunction(cost);
+                cost = scoreFunction(cost);
                 if (cost < option_d.score) {
                     // cout << "\tjerk_s = " << jerk_s << endl;
                     // cout << "\tacceleration_s: " << acceleration_s << endl;

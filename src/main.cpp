@@ -75,8 +75,8 @@ int main() {
                     double car_speed = j[1]["speed"];
 
                     // Previous path data given to the Planner
-                    vector<float> previous_path_x = j[1]["previous_path_x"];
-                    vector<float> previous_path_y = j[1]["previous_path_y"];
+                    vector<double> previous_path_x = j[1]["previous_path_x"];
+                    vector<double> previous_path_y = j[1]["previous_path_y"];
                     // Previous path's end s and d values
                     double end_path_s = j[1]["end_path_s"];
                     double end_path_d = j[1]["end_path_d"];
@@ -91,7 +91,8 @@ int main() {
 
                     // future<void> sf(async(launch::deferred, [&sensorFusion, &sensor_fusion_data]{sensorFusion.predict(sensor_fusion_data);})); // launch instantly
                     cout << "current\tcar_x: " <<  car_x << "\tcar_y: " <<  car_y << "\tcar_s: " << car_s << "\tcar_d: "
-                         << car_d << "\tcar_yaw: " << car_yaw << "\tcar_speed: " << car_speed << endl;
+                         << car_d << "\tcar_yaw: " << car_yaw << "\tcar_speed: " << car_speed << "\tend_path_s: "
+                         << end_path_s << "\tend_path_d: " << end_path_d << endl;
 
                     if(size <= 2){
                         // use current position
@@ -112,19 +113,24 @@ int main() {
                         // use the previous path's endpoint as a starting reference
                         // Redefine reference state as previous path end point
 
-                        float ref_x = float(previous_path_x[size - 1]);
-                        float ref_y = float(previous_path_y[size - 1]);
+                        const double ref_x = previous_path_x[size - 1];
+                        const double ref_y = previous_path_y[size - 1];
                         // make sure the path is tangent to the the angle of the car by using the last two points in
                         // the previous path
-                        float ref_x_prev = float(previous_path_x[size - 2]);
-                        float ref_y_prev = float(previous_path_y[size - 2]);
+                        const double ref_x_prev = previous_path_x[size - 2];
+                        const double ref_y_prev = previous_path_y[size - 2];
 
-                        float ref_x_prev_prev = float(previous_path_x[size - 3]);
-                        float ref_y_prev_prev = float(previous_path_y[size - 3]);
+                        const double ref_x_prev_prev = previous_path_x[size - 3];
+                        const double ref_y_prev_prev = previous_path_y[size - 3];
 
-                        cout << "ref: [ " << ref_x << ", " << ref_y << " ]" << endl;
-                        cout << "prev: [ " << ref_x_prev << ", " << ref_y_prev << " ]" << endl;
-                        cout << "prev2: [ " << ref_x_prev_prev << ", " << ref_y_prev_prev << " ]" << endl;
+                        /*
+                        cout << ref_x << endl;
+                        cout << ref_y << endl;
+                        cout << ref_x_prev << endl;
+                        cout << ref_y_prev << endl;
+                        cout << ref_x_prev_prev << endl;
+                        cout << ref_y_prev_prev << endl;
+                        */
                         // cout << "\t[ s = " << end_path_s << ", d = " << end_path_d << " ]" << endl;
 
                         // double ref_yaw = calculateYaw(ref_y, ref_y_prev, ref_x, ref_x_prev);
@@ -139,39 +145,39 @@ int main() {
                         // cout << "\t[ s = " << sAndD[0] << ", d = " << sAndD[1] << " ]" << endl;
                         // cout << "\t[ s = " << end_path_s << ", d = " << end_path_d << " ]" << endl;
 
-                        float diff = ref_x - ref_x_prev;
-                        float diff2 = ref_y - ref_y_prev;
-                        cout << "diff: " << diff << "\tdiff2: " << diff2 << endl;
-                        float vx = (diff) / refresh_rate;
-                        float vy = (diff2) / refresh_rate;
-                        diff = ref_x_prev - ref_x_prev_prev;
-                        diff2 = ref_y_prev - ref_y_prev_prev;
-                        cout << "diff: " << diff << "\tdiff2: " << diff2 << endl;
-                        float vx2 = (diff) / refresh_rate;
-                        float vy2 = (diff2) / refresh_rate;
+
+                        double vx = (ref_x - ref_x_prev) / refresh_rate;
+                        double vy = (ref_y - ref_y_prev) / refresh_rate;
+                        double vx2 = (ref_x_prev - ref_x_prev_prev) / refresh_rate;
+                        double vy2 = (ref_y_prev - ref_y_prev_prev) / refresh_rate;
 
                         cout << "vx: " << vx << "\tvy: " << vy << endl;
                         cout << "vx2: " << vx2 << "\tvy2: " << vy2 << endl;
 
-                        float velocity = sqrt(pow(((ref_x - ref_x_prev) / refresh_rate), 2) + pow(((ref_y - ref_y_prev) / refresh_rate), 2));
+                        double velocity = sqrt(pow(vx, 2) + pow(vy, 2));
                         cout << "\tcalculated velocity: " << velocity << endl;
-                        float velocity2 = sqrt(pow(((ref_x_prev - ref_x_prev_prev) / refresh_rate), 2) + pow(((ref_y_prev - ref_y_prev_prev) / refresh_rate), 2));
+                        double velocity2 = sqrt(pow(vx2, 2) + pow(vy2, 2));
                         cout << "\tcalculated velocity2: " << velocity2 << endl;
-                        float acceleration = ((velocity - velocity2) / refresh_rate);
+                        double acceleration = ((velocity - velocity2) / refresh_rate);
                         cout << "\tacceleration: " << acceleration << endl;
 
                         vector<double> sf = trajectory.sfVals();
                         vector<double> df = trajectory.dfVals();
                         car.update(sf[0], sf[1], sf[2], df[0], df[1], df[2]);
+                        // car.update(end_path_s, velocity, acceleration, end_path_d, df[1], df[2]);
                         car.print();
                     }
 
                     // reset the scores
                     // sensorFusion.predict(sensor_fusion_data, previous_path_x, previous_path_y);
+                    /*
                     future<void> sf(async(launch::async, [&sensorFusion, &values, &sensor_fusion_data, &previous_path_x, &previous_path_y, &car, &size]{
                         values.reset(car.getLane());
                         sensorFusion.predict(sensor_fusion_data, size);
                     }));
+                    */
+                    values.reset(car.getLane());
+                    sensorFusion.predict(sensor_fusion_data, size);
 
                     // cout << "old points" << endl;
                     for(short a = 0; a < size; a++){
@@ -180,8 +186,8 @@ int main() {
                         // cout << "prev [ x:" << next_x_vals[a] << "\ty:" << next_y_vals[a] << " ]" << endl;
                     }
 
-                    if(size <= 20){
-                        sf.get();
+                    if(size < num_points){
+                        // sf.get();
                         options = behaviorPlanner.plan();
 
                         trajectory.calculatePoints(options[0], options[1], size);
@@ -194,7 +200,7 @@ int main() {
                             next_x_vals.push_back(x_vals[a]);
                             next_y_vals.push_back(y_vals[a]);
 
-                            cout << "new [ x:" << x_vals[a] << "\ty: " << y_vals[a] << " ]" << endl;
+                            // cout << "new [ x:" << x_vals[a] << "\ty: " << y_vals[a] << " ]" << endl;
                         }
                     }
 

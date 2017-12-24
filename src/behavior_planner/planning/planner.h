@@ -14,6 +14,24 @@ using namespace Eigen;
 using namespace std;
 
 class planner{
+private:
+
+    // weights for the cost function
+    // max value is 7500 for a bad score
+    // best score is 0
+
+    const double k_j = 1;
+
+    const double k_d = 39.0625;
+
+    const double k_t = 156.25;
+
+    const double k_s = -4;
+
+    const double k_s_bias = 2500;
+
+    const double k_v = 25;
+
 public:
     trajectory_option option_s;
     trajectory_option option_d;
@@ -39,22 +57,6 @@ public:
 
 protected:
     std::function<double(double)> scoreFunction;
-
-    // weights for the cost function
-    // max value is 7500 for a bad score
-    // best score is 0
-
-    const float k_j = 1;
-
-    const float k_d = 39.0625;
-
-    const float k_t = 156.25;
-
-    const float k_s = -4;
-
-    const float k_s_bias = 2500;
-
-    const float k_v = 25;
 
     driver *car;
     scores *values;
@@ -86,8 +88,8 @@ protected:
 
     inline double positionF(Eigen::VectorXd &x, double constant, double s, double s_dot, double s_dot_dot){
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        c << pow(constant, 3) / 6, pow(constant, 4) / 24, pow(constant, 5) / 120;
-        return x.transpose() * c + .5 * s_dot_dot * pow(constant, 2) + s_dot * constant + s;
+        c << pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d, pow(constant, 5.0d) / 120.0d;
+        return x.transpose() * c + s_dot_dot * pow(constant, 2.0d) / 2.0d + s_dot * constant + s;
     }
 
     inline double velocityF(Eigen::VectorXd &x, double constant, double s_dot, double s_dot_dot){
@@ -103,7 +105,7 @@ protected:
          */
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         // double constant = refresh_rate * a;
-        c << pow(constant, 2) / 2, pow(constant, 3) / 6, 5 * pow(constant, 4) / 24;
+        c << pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d;
         return x.transpose() * c + s_dot_dot * constant + s_dot;
     }
 
@@ -111,8 +113,8 @@ protected:
         double sum = 0;
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         for(short a = 1; a <= num_points; a++){
-            double constant = refresh_rate * a;
-            c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
+            double constant = refresh_rate * double(a);
+            c << constant, pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d;
             sum +=  x.transpose() * c + s_dot_dot;
         }
         return (sum / double(num_points));
@@ -120,7 +122,7 @@ protected:
 
     inline double accelerationF(Eigen::VectorXd &x, double constant, double s_dot_dot){
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        c << constant, pow(constant, 2) / 2, pow(constant, 3) / 6;
+        c << constant, pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d;
         return x.transpose() * c + s_dot_dot;
     }
 
@@ -134,9 +136,9 @@ protected:
     }
 
     inline double squareJerk(Eigen::VectorXd &x, double constant){
-        Eigen::VectorXd c(3);
-        c << 1 , constant, pow(constant, 2) / 2;
-        return pow(x.transpose() * c, 2);
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
+        c << 1.0d , constant, pow(constant, 2.0d) / 2.0d;
+        return pow(x.transpose() * c, 2.0d);
     }
 
     // cost functions
@@ -147,7 +149,7 @@ protected:
              << " ]" << std::endl;
         */
         // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_v * pow(diff, 2);
+        return k_j * squareJerk(calculated, time_period) + k_t * (time - double(time_period)) + k_v * pow(diff, 2.0d);
     }
 
     inline double costS(double time, double diff, Eigen::VectorXd &calculated){
@@ -157,7 +159,7 @@ protected:
              << " ]" << std::endl;
         */
         // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_s * pow(diff, 2) + k_s_bias;
+        return k_j * squareJerk(calculated, time_period) + k_t * (time - double(time_period)) + k_s * pow(diff, 2.0d) + k_s_bias;
     }
 
     inline double costD(double time, double diff, Eigen::VectorXd &calculated){
@@ -167,7 +169,7 @@ protected:
              << " ]" << std::endl;
         */
         // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (time - time_period) + k_d * pow(diff, 2);
+        return k_j * squareJerk(calculated, time_period) + k_t * (time - double(time_period)) + k_d * pow(diff, 2.0d);
     }
 
     inline double costSD(double time, double diff_s, double diff_d, Eigen::VectorXd &calculated){
@@ -177,7 +179,7 @@ protected:
              << " ]" << std::endl;
         */
         // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (diff_s) + k_d * pow(diff_d, 2);
+        return k_j * squareJerk(calculated, double(time_period)) + k_t * (diff_s) + k_d * pow(diff_d, 2.0d);
     }
 
     inline Eigen::VectorXd sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot){
@@ -191,11 +193,11 @@ protected:
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(3, 3);
         Eigen::VectorXd B = Eigen::VectorXd::Zero(3);
 
-        A << pow(time, 3), pow(time, 4), pow(time, 5),
-                3 * pow(time, 2), 4 *pow(time, 3), 5 * pow(time, 4),
-                6 * time, 12 * pow(time, 2), 20 * pow(time, 3);
+        A << pow(time, 3.0d), pow(time, 4.0d), pow(time, 5.0d),
+                3.0d * pow(time, 2.0d), 4.0d *pow(time, 3.0d), 5.0d * pow(time, 4.0d),
+                6.0d * time, 12.0d * pow(time, 2.0d), 20.0d * pow(time, 3.0d);
 
-        B << (xf - (x + x_dot * time + 0.5 * x_dot_dot * pow(time, 2))),
+        B << (xf - (x + x_dot * time + 0.5 * x_dot_dot * pow(time, 2.0d))),
                 (xf_dot - (x_dot + x_dot_dot * time)),
                 (xf_dot_dot - x_dot_dot);
 

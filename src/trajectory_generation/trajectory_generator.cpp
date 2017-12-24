@@ -5,7 +5,7 @@
 #include "trajectory_generator.h"
 
 double trajectory_generator::calculatePoint(double &time, VectorXd &constants){
-    *t << 1.0, time, pow(time, 2), pow(time, 3), pow(time, 4), pow(time, 5);
+    *t << 1.0, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 3.0d, pow(time, 4.0d) / 4.0d, pow(time, 5.0d) / 5.0d;
     return (*t).transpose() * constants;
 }
 
@@ -30,7 +30,7 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
 
         std::vector<double> xy = mapData->getXY(s, d);
 
-        // cout << "[ s: " << s << "\td: " << d << "\ttime = " << time << " ]" << endl;
+        cout << "[ s: " << s << "\td: " << d << "\ttime = " << time << " ]" << endl;
         // cout << "[ x: " << xy[0] << "\ty: " << xy[1] << " ]" << endl;
         x_vals.push_back(xy[0]);
         y_vals.push_back(xy[1]);
@@ -38,11 +38,11 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
     sf = s;
     df = d;
 
-    *t << 0, 1, time, pow(time, 2) / 2, pow(time, 3) / 6, pow(time, 4) / 24;
+    *t << 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 6.0d, pow(time, 4.0d) / 24.0d;
     sf_dot = (*t).transpose() * *s_option.vector;
     df_dot = (*t).transpose() * *d_option.vector;
 
-    *t << 0, 0, 1, time, pow(time, 2) / 2, pow(time, 3) / 6;
+    *t << 0.0d, 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 6.0d;
     sf_dot_dot = (*t).transpose() * *s_option.vector;
     df_dot_dot = (*t).transpose() * *d_option.vector;
 

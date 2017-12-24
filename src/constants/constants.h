@@ -39,7 +39,7 @@ const float time_period = 1.0;
 
 const short num_points = time_period / refresh_rate;
 
-const drive_mode driveMode = REGULAR; // this is the median score
+const drive_mode driveMode = ECONOMY; // this is the median score
 
 const float velocity_barrier = 0.2; // anything below 10mph is generated differently
 
