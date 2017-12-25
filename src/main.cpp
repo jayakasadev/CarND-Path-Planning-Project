@@ -157,13 +157,16 @@ int main() {
                         double velocity = sqrt(pow(vx, 2) + pow(vy, 2));
                         cout << "\tcalculated velocity: " << velocity << endl;
                         double velocity2 = sqrt(pow(vx2, 2) + pow(vy2, 2));
-                        cout << "\tcalculated velocity2: " << velocity2 << endl;
+                        // cout << "\tcalculated velocity2: " << velocity2 << endl;
                         double acceleration = ((velocity - velocity2) / refresh_rate);
                         cout << "\tacceleration: " << acceleration << endl;
 
                         vector<double> sf = trajectory.sfVals();
                         vector<double> df = trajectory.dfVals();
-                        car.update(sf[0], sf[1], sf[2], df[0], df[1], df[2]);
+                        cout << "s: " << sf[0] << "\tvelocity: " << sf[1] << "\tacceleration: " << sf[2] << endl;
+                        cout << "d: " << df[0] << "\tvelocity: " << df[1] << "\tacceleration: " << df[2] << endl;
+                        car.update(end_path_s, sf[1], sf[2], end_path_d, df[1], df[2]);
+                        // car.update(sf[0], sf[1], sf[2], df[0], df[1], df[2]);
                         // car.update(end_path_s, velocity, acceleration, end_path_d, df[1], df[2]);
                         car.print();
                     }
@@ -197,6 +200,7 @@ int main() {
 
                         // cout << "new points" << endl;
                         for(short a = 0; a < x_vals.size(); a++){
+                            // if(trajectory.sfVals()[1] >= 8) break;
                             next_x_vals.push_back(x_vals[a]);
                             next_y_vals.push_back(y_vals[a]);
 

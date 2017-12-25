@@ -30,8 +30,8 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
 
         std::vector<double> xy = mapData->getXY(s, d);
 
-        cout << "[ s: " << s << "\td: " << d << "\ttime = " << time << " ]" << endl;
-        // cout << "[ x: " << xy[0] << "\ty: " << xy[1] << " ]" << endl;
+        outputfile << "time: " << time << "\t[ s: " << s << "\td: " << d << " ]";
+        outputfile << "\t[ x: " << xy[0] << "\ty: " << xy[1] << " ]" << endl;
         x_vals.push_back(xy[0]);
         y_vals.push_back(xy[1]);
     }

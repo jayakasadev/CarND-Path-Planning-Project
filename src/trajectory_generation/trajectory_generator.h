@@ -7,6 +7,10 @@
 
 #include <vector>
 #include <iostream>
+#include <iostream>
+#include <fstream>
+#include <string>
+
 #include "../Eigen-3.3/Eigen/Dense"
 #include "../constants/constants.h"
 #include "../map/map.h"
@@ -28,6 +32,9 @@ private:
     double sf_dot_dot;
     double df_dot_dot;
     VectorXd *t;
+    ofstream outputfile;
+
+    const string filename = "../data/points.txt";
 
     double calculatePoint(double &t, VectorXd &constants);
 
@@ -43,8 +50,11 @@ public:
         df = 0;
         df_dot = 0;
         df_dot_dot = 0;
+        outputfile.open(filename);
     }
-    ~trajectory_generator(){}
+    ~trajectory_generator(){
+        outputfile.close();
+    }
 
     void calculatePoints(trajectory_option &s_option, trajectory_option &d_option, short size);
 

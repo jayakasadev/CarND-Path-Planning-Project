@@ -41,7 +41,7 @@ const short num_points = time_period / refresh_rate;
 
 const drive_mode driveMode = ECONOMY; // this is the median score
 
-const float velocity_barrier = 0.2; // anything below 10mph is generated differently
+const float velocity_barrier = 0.15; // anything below 10mph is generated differently
 
 const float scalar = .00007114;
 
