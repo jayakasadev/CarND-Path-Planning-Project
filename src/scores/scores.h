@@ -24,15 +24,14 @@ private:
     // read_write_lock distance_front_lock;
     // read_write_lock distance_back_lock;
 
+    void initialize(double s , short lane);
+
 public:
-    scores(short lane){
-        initialize(lane);
-    }
+    scores(){}
+
     ~scores(){}
 
-    void reset(short lane);
-
-    void initialize(short lane);
+    void reset(double s, short lane);
 
     void setFollow(short lane);
 

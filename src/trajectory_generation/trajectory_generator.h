@@ -31,6 +31,11 @@ private:
     double df_dot;
     double sf_dot_dot;
     double df_dot_dot;
+    double ps;
+    double pd;
+    double px;
+    double py;
+    double diff;
     VectorXd *t;
     ofstream outputfile;
 
@@ -51,6 +56,12 @@ public:
         df_dot = 0;
         df_dot_dot = 0;
         outputfile.open(filename);
+
+        ps = 0;
+        pd = 0;
+        px = 0;
+        py = 0;
+         diff = 0;
     }
     ~trajectory_generator(){
         outputfile.close();

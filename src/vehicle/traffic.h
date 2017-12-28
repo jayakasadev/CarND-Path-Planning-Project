@@ -17,7 +17,10 @@ using namespace std::chrono;
 class traffic : public vehicle {
 private:
     std::chrono::high_resolution_clock::time_point last_Seen;
+
     bool first;
+
+    const short search_field_timelimit = 500; // forget the car if I have not seen it in .5 second
 
     inline void checkOutdated() {
         // std::cout << "checkOutdated" << std::endl;
@@ -40,11 +43,12 @@ public:
     // constructor for sensor fusion
     traffic() {
         last_Seen = high_resolution_clock::now(); // update last seen time
+        first = true;
     }
 
     ~traffic() {}
 
-    void update(double vx, double vy, double s, double d, double size);
+    void update(double vx, double vy, double s, double d);
 
     void print();
 };

@@ -6,7 +6,7 @@
 #define PATH_PLANNING_SENSOR_FUSION_H
 
 #include <unordered_map>
-#include "../map/map.h"
+
 #include "../utilities/json.hpp"
 #include "../behavior_planner/behavior_planner.h"
 #include "../scores/scores.h"
@@ -21,7 +21,6 @@ private:
     std::unordered_map<short, traffic *> hashmap;
     scores *values;
     driver * car;
-    map_data *mapData;
 
     inline float getSearchField(short lane, double car_lane) {
         float field = abs(lane - car_lane) * search_field_buffer + search_field_buffer;
@@ -31,13 +30,12 @@ private:
         return search_field_decay * field;
     }
 
-    void setScore(double car_s, double car_d, double s, double d, double velocity);
+    void setScore(double car_s, double car_d, double target_s, double target_d, double target_velocity);
 
 public:
-    sensorfusion(driver &car, scores &scores, map_data &mapData){
+    sensorfusion(driver &car, scores &scores){
         this->car = &car;
         this->values = &scores;
-        this->mapData = &mapData;
     }
 
     ~sensorfusion(){

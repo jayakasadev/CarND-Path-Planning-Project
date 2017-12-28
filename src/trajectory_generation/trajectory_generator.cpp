@@ -5,7 +5,6 @@
 #include "trajectory_generator.h"
 
 double trajectory_generator::calculatePoint(double &time, VectorXd &constants){
-    *t << 1.0, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 3.0d, pow(time, 4.0d) / 4.0d, pow(time, 5.0d) / 5.0d;
     return (*t).transpose() * constants;
 }
 
@@ -25,16 +24,34 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
     double d = 0;
     for(short a = 1; a <= num_points - size; a++){
         time = a * refresh_rate;
-        s = calculatePoint(time, *s_option.vector);
-        d = calculatePoint(time, *d_option.vector);
+        *t << 1.0, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 3.0d, pow(time, 4.0d) / 4.0d, pow(time, 5.0d) / 5.0d;
+        s = (*t).transpose() * *s_option.vector;
+        d = (*t).transpose() * *d_option.vector;
+
+        // *t << 0.0d, 0.0d, 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d;
+        // double jerk_s = (*t).transpose() * *s_option.vector;
+        // double jerk_d = (*t).transpose() * *d_option.vector;
 
         std::vector<double> xy = mapData->getXY(s, d);
 
-        outputfile << "time: " << time << "\t[ s: " << s << "\td: " << d << " ]";
-        outputfile << "\t[ x: " << xy[0] << "\ty: " << xy[1] << " ]" << endl;
+        double curr_diff = s - ps;
+        if(curr_diff >= 2 * diff){
+            outputfile << "WEIRD\t";
+        }
+        outputfile << "time: " << time;
+        outputfile << "\t[ s: " << s << "\td: " << d << " ]";
+        // outputfile << "\t[ x: " << xy[0] << "\ty: " << xy[1] << " ]";
+        outputfile << "\tdiff_s: " << (s - ps) << "\tdiff_y: " << (d - pd)  << "\tv: " << sqrt(pow((xy[0] - px) / refresh_rate, 2) + pow((xy[1] - py) / refresh_rate, 2)) / mph_to_mps;
+        outputfile << endl;
         x_vals.push_back(xy[0]);
         y_vals.push_back(xy[1]);
+        ps = s;
+        pd = d;
+        px = xy[0];
+        py = xy[1];
+        diff = curr_diff;
     }
+
     sf = s;
     df = d;
 

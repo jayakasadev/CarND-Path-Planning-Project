@@ -14,23 +14,6 @@ using namespace Eigen;
 using namespace std;
 
 class planner{
-private:
-
-    // weights for the cost function
-    // max value is 7500 for a bad score
-    // best score is 0
-
-    const double k_j = 1;
-
-    const double k_d = 39.0625;
-
-    const double k_t = 156.25;
-
-    const double k_s = -4;
-
-    const double k_s_bias = 2500;
-
-    const double k_v = 25;
 
 public:
     trajectory_option option_s;
@@ -69,18 +52,19 @@ protected:
         vehicle_behavior behavior = values->getBehavior(lane);
         if(behavior == vehicle_behavior::STOP) {
             // std::cout << "STOP " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = car->getS() + values->getDistanceFront(lane);
+            sf = values->getDistanceFront(lane);
+            sf_dot = 0;
         } else if(behavior == vehicle_behavior::FOLLOW) {
             // std::cout << "FOLLOW " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = car->getS() + values->getDistanceFront(lane) + values->getVelocity(lane) * time_period;
+            sf = values->getDistanceFront(lane) + values->getVelocity(lane) * time_period - follow_buffer;
             sf_dot = values->getVelocity(lane);
         } else if(behavior == vehicle_behavior::MERGE){
             // std::cout << "MERGE " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = car->getS() + values->getDistanceFront(lane);
+            sf = values->getDistanceFront(lane);
             sf_dot = values->getVelocity(lane);
         } else{
             // std::cout << "KEEP VELOCITY " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = car->getS() +  + values->getDistanceFront(lane);
+            sf = values->getDistanceFront(lane);
             sf_dot = values->getVelocity(lane);
         }
         // std::cout << " sf: " << sf << " sf_dot: " << sf_dot << std::endl;
@@ -90,6 +74,19 @@ protected:
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         c << pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d, pow(constant, 5.0d) / 120.0d;
         return x.transpose() * c + s_dot_dot * pow(constant, 2.0d) / 2.0d + s_dot * constant + s;
+    }
+
+    inline double velocityAvg(Eigen::VectorXd &x, double s_dot, double s_dot_dot){
+        double sum = 0;
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
+        for(short a = 1; a <= num_points; a++){
+            double constant = refresh_rate * double(a);
+            c << pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d;
+            double acc = x.transpose() * c + s_dot_dot * constant + s_dot;
+            if(abs(acc) >= max_velocity) return acc; // do not want any weird skips in my path for any reason
+            sum += acc;
+        }
+        return (sum / double(num_points));
     }
 
     inline double velocityF(Eigen::VectorXd &x, double constant, double s_dot, double s_dot_dot){
@@ -115,7 +112,9 @@ protected:
         for(short a = 1; a <= num_points; a++){
             double constant = refresh_rate * double(a);
             c << constant, pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d;
-            sum +=  x.transpose() * c + s_dot_dot;
+            double acc = x.transpose() * c + s_dot_dot;
+            if(abs(acc) >= max_acceleration) return acc; // do not want any weird skips in my path for any reason
+            sum += acc;
         }
         return (sum / double(num_points));
     }
@@ -141,48 +140,7 @@ protected:
         return pow(x.transpose() * c, 2.0d);
     }
 
-    // cost functions
-    inline double costV(double time, double diff, Eigen::VectorXd &calculated){
-        /*
-        std::cout << "planner::costS_Vel\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << (time - time_period) << ", kv = " << k_v << ", diff^2 = " << pow(diff, 2)
-             << " ]" << std::endl;
-        */
-        // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (time - double(time_period)) + k_v * pow(diff, 2.0d);
-    }
-
-    inline double costS(double time, double diff, Eigen::VectorXd &calculated){
-        /*
-        std::cout << "planner::costS\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << (time - time_period) << ", ks = " << k_s << ", diff^2 = " << pow(diff, 2)
-             << " ]" << std::endl;
-        */
-        // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (time - double(time_period)) + k_s * pow(diff, 2.0d) + k_s_bias;
-    }
-
-    inline double costD(double time, double diff, Eigen::VectorXd &calculated){
-        /*
-        std::cout << "\tplanner::costD\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << (time - time_period) << ", kd = " << k_d << ", diff^2 = " << pow(diff, 2)
-             << " ]" << std::endl;
-        */
-        // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, time_period) + k_t * (time - double(time_period)) + k_d * pow(diff, 2.0d);
-    }
-
-    inline double costSD(double time, double diff_s, double diff_d, Eigen::VectorXd &calculated){
-        /*
-        std::cout << "\tplanner::costD\t[ k_j = " << k_j << ", jerk^2 = " << squareJerk(calculated, time_period)
-             << ", kt = " << k_t << ", time = " << (time - time_period) << ", kd = " << k_d << ", diff^2 = " << pow(diff, 2)
-             << " ]" << std::endl;
-        */
-        // cout << calculated.transpose() << endl;
-        return k_j * squareJerk(calculated, double(time_period)) + k_t * (diff_s) + k_d * pow(diff_d, 2.0d);
-    }
-
-    inline Eigen::VectorXd sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot){
+    inline VectorXd sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot){
         /*
         std::cout << "sharedCalc: [ time = " << time << ", x = " << x << ", x_dot = " << x_dot << ", x_dot_dot = "
                   << x_dot_dot << ", xf = " << xf << ", xf_dot = " << xf_dot << ", xf_dot_dot = " << xf_dot_dot
@@ -190,14 +148,14 @@ protected:
         */
         // std::cout << "\nA^-1:\n" << Ai << std::endl;
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(3, 3);
-        Eigen::VectorXd B = Eigen::VectorXd::Zero(3);
+        MatrixXd A = MatrixXd::Zero(3, 3);
+        VectorXd B = VectorXd::Zero(3);
 
-        A << pow(time, 3.0d), pow(time, 4.0d), pow(time, 5.0d),
-                3.0d * pow(time, 2.0d), 4.0d *pow(time, 3.0d), 5.0d * pow(time, 4.0d),
-                6.0d * time, 12.0d * pow(time, 2.0d), 20.0d * pow(time, 3.0d);
+        A << pow(time, 3), pow(time, 4), pow(time, 5),
+                3.0d * pow(time, 2), 4.0d *pow(time, 3), 5.0d * pow(time, 4),
+                6.0d * time, 12.0d * pow(time, 2), 20.0d * pow(time, 3);
 
-        B << (xf - (x + x_dot * time + 0.5 * x_dot_dot * pow(time, 2.0d))),
+        B << (xf - (x + x_dot * time + 0.5 * x_dot_dot * pow(time, 2))),
                 (xf_dot - (x_dot + x_dot_dot * time)),
                 (xf_dot_dot - x_dot_dot);
 

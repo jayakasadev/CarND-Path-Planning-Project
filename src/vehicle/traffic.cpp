@@ -4,7 +4,7 @@
 
 #include "traffic.h"
 
-void traffic::update(double vx, double vy, double s, double d, double size){
+void traffic::update(double vx, double vy, double s, double d){
     // std::cout << "traffic::update" << std::endl;
     // print();
     if(first){
@@ -17,16 +17,17 @@ void traffic::update(double vx, double vy, double s, double d, double size){
     } else {
         checkOutdated(); // check if the measurements are outdated
         double temp = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s;
-        // duration<double> time_span = high_resolution_clock::now() - last_Seen;
+        duration<double> time_span = high_resolution_clock::now() - last_Seen;
+        double time = time_span.count();
         // std::cout << "temp : " << temp << " velocity_s : " << this->velocity_s << std::endl;
-        // this->acceleration_s = (temp - this->velocity_s) / time_span.count();
+        this->acceleration_s = (temp - this->velocity_s) / time;
         this->velocity_s = temp;
 
         // std::cout << "acceleration_s " << this->acceleration_s << std::endl;
 
-        temp = ((d - this->d) / ((num_points - size) * refresh_rate));
+        temp = ((d - this->d) / time);
         // std::cout << "temp : " << temp << " velocity_d : " << velocity_d << std::endl;
-        // this->acceleration_d = (temp - this->velocity_d) / time_span.count();
+        this->acceleration_d = (temp - this->velocity_d) / time;
         // std::cout << "acceleration_d " << this->acceleration_d << std::endl;
         this->velocity_d = temp;
         // predictions
@@ -42,6 +43,8 @@ void traffic::update(double vx, double vy, double s, double d, double size){
 
     this->s = s;
     this->d = d;
+
+    getPredicted();
 }
 
 void traffic::print() {

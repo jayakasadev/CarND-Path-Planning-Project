@@ -1,7 +1,7 @@
 #include <iostream>
 #include "scores.h"
 
-void scores::initialize(short lane){
+void scores::initialize(double s, short lane){
     // std::cout << "scores::initialize" << std::endl;
     /*
     behavior_lock.write_lock();
@@ -16,8 +16,8 @@ void scores::initialize(short lane){
         }
         behavior.push_back(MERGE);
         velocity.push_back(max_velocity_mps);
-        distance_front.push_back(spacing);
-        distance_back.push_back(-spacing);
+        distance_front.push_back(s + spacing);
+        distance_back.push_back(s - spacing);
     }
     /*
     distance_back_lock.write_unlock();
@@ -27,7 +27,7 @@ void scores::initialize(short lane){
      */
 }
 
-void scores::reset(short lane){
+void scores::reset(double s, short lane){
     // std::cout << "scores::reset" << std::endl;
     /*
     behavior_lock.write_lock();
@@ -45,7 +45,7 @@ void scores::reset(short lane){
     velocity_lock.write_unlock();
     behavior_lock.write_unlock();
      */
-    initialize(lane);
+    initialize(s, lane);
 }
 
 void scores::setFollow(short lane){
@@ -176,7 +176,7 @@ void scores::printScores(){
     lock.read_lock();
     std::cout << "SCORES: " << std::endl;
     std::cout << "\tlane\t||\tbehavior\t||\tvelocity\t||\tdistance front\t||\tdistance back" << std::endl;
-    for(short a = 0; a < num_lanes; a++){
+    for(short a = num_lanes - 1; a >= 0; a--){
         std::cout << "\t" << a << "\t||\t" << this->behavior[a] << "\t||\t" << this->velocity[a] << "\t||\t" << this->distance_front[a] << "\t||\t" << this->distance_back[a] << std::endl;
     }
     lock.read_unlock();

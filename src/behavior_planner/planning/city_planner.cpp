@@ -1,14 +1,16 @@
 #include "city_planner.h"
 
 void city_planner::calculate(){
-    cout << "city_planner::calculate\tlane: " << lane << endl;
+    // cout << "city_planner::calculate\tlane: " << lane << endl;
     // car->print();
     option_s.reset(car->getS(), car->getVelocityS(), car->getAccelerationS());
     option_d.reset(car->getD(), car->getVelocityD(), car->getAccelerationD());
     double sf = 0, sf_dot = 0, sf_dot_dot = 0;
     getSfVals(sf, sf_dot, lane);
+    cout << "sf: " << sf << "\tsf_dot: " << sf_dot << "\tsf_dot_dot: " << sf_dot_dot << endl;
 
     double df = calculateTargetD(lane), df_dot = 0, df_dot_dot = 0;
+    cout << "df: " << df << "\tdf_dot: " << df_dot << "\tdf_dot_dot: " << df_dot_dot << endl;
 
     VectorXd c_d;
     VectorXd c_s;
@@ -24,10 +26,14 @@ void city_planner::calculate(){
             // cout << "\ttime: " << time;
             // cout << "\tS -> jerk: " << c_s[0] << " snap: " << c_s[1] << " crackle: " << c_s[2] << endl;
             double acceleration_s = accelerationAvg(c_s, car->getAccelerationS());
-            double jerk_s = jerkAvg(acceleration_s);
             double acceleration_d = accelerationAvg(c_d, car->getAccelerationD());
+            double jerk_s = jerkAvg(acceleration_s);
             double jerk_d = jerkAvg(acceleration_d);
-            if(abs(jerk_s) < max_jerk && abs(acceleration_s) < max_acceleration && abs(jerk_d) < max_jerk && abs(acceleration_d) < max_acceleration) {
+            double velocity_s = velocityAvg(c_s, car->getVelocityS(), car->getAccelerationS());
+            double velocity_d = velocityAvg(c_d, car->getVelocityD(), car->getAccelerationD());
+            if(abs(jerk_s) < max_jerk && abs(acceleration_s) < max_acceleration && abs(jerk_d) < max_jerk
+               && abs(acceleration_d) < max_acceleration && abs(velocity_s) < max_velocity * mph_to_mps
+               && abs(velocity_d) < max_velocity * mph_to_mps){
                 double diff_d = df - car->getD();
                 double diff_s = sf - car->getS();
                 double cost = costSD(time, diff_s, diff_d, c_d);

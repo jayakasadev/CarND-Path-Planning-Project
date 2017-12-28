@@ -1,12 +1,13 @@
 #include "highway_planner.h"
 
 void highway_planner::calculateS(){
-    cout << "behavior_planner::calculateHighwayS\tlane: " << lane << endl;
+    // cout << "highway_planner::calculateS\tlane: " << lane << endl;
     option_s.reset(car->getS(), car->getVelocityS(), car->getAccelerationS());
     double sf = 0, sf_dot = 0, sf_dot_dot = 0;
     getSfVals(sf, sf_dot, lane);
+    cout << "sf: " << sf << "\tsf_dot: " << sf_dot << "\tsf_dot_dot: " << sf_dot_dot << endl;
     VectorXd c_s;
-    for(double time = 1.0; time <= 3.0; time += refresh_rate) {
+    for(double time = 1.0; time <= 4.0; time += refresh_rate) {
         // cout << "CALCULATE S" << endl;// generate matrices
 
         c_s = sharedCalc(time, car->getS(), car->getVelocityS(), car->getAccelerationS(), sf, sf_dot, sf_dot_dot);
@@ -65,10 +66,10 @@ void highway_planner::calculateS(){
 }
 
 void highway_planner::calculateD(){
-    cout << "behavior_planner::calculateHighwayD\t" << lane << endl;
+    // cout << "highway_planner::calculateD\t" << lane << endl;
     option_d.reset(car->getD(), car->getVelocityD(), car->getAccelerationD());
     double df = calculateTargetD(lane), df_dot = 0, df_dot_dot = 0;
-    // cout << "\tdf: " << df;
+    cout << "df: " << df << "\tdf_dot: " << df_dot << "\tdf_dot_dot: " << df_dot_dot << endl;
     VectorXd c_d;
     for(double time = 1.0; time <= 4.0; time+=refresh_rate) {
         // c_d = VectorXd::Zero(3);

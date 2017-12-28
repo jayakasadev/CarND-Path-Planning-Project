@@ -82,6 +82,8 @@ public:
     }
 
     inline std::vector<double> getPredicted(){
+        ps = s + velocity_s * time_period + .5 * acceleration_s * pow(time_period, 2);
+        pd = d + velocity_d * time_period + .5 * acceleration_d * pow(time_period, 2);
         return {ps, pd};
     }
 
@@ -94,11 +96,11 @@ public:
     }
 
     inline double getPredictedS(double time){
-        return s + velocity_s * time;
+        return s + velocity_s * time + .5 * acceleration_s * pow(time, 2);
     }
 
     inline double getPredictedD(double time){
-        return d + velocity_d * time;
+        return d + velocity_d * time + .5 * acceleration_d * pow(time, 2);
     }
 
     inline void print(){
