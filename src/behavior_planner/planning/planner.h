@@ -76,6 +76,17 @@ protected:
         return x.transpose() * c + s_dot_dot * pow(constant, 2.0d) / 2.0d + s_dot * constant + s;
     }
 
+    inline bool moveForwardOnly(Eigen::VectorXd &x, double s, double s_dot, double s_dot_dot){
+        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
+        for(short a = 1; a <= num_points; a++){
+            double constant = refresh_rate * double(a);
+            c << pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d, pow(constant, 5.0d) / 120.0d;
+            double acc = x.transpose() * c + s_dot_dot * pow(constant, 2.0d) / 2.0d + s_dot * constant + s;
+            if((acc - s) <= 0) return false; // do not want any weird skips in my path for any reason
+        }
+        return true;
+    }
+
     inline double velocityAvg(Eigen::VectorXd &x, double s_dot, double s_dot_dot){
         double sum = 0;
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
@@ -84,22 +95,12 @@ protected:
             c << pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d;
             double acc = x.transpose() * c + s_dot_dot * constant + s_dot;
             if(abs(acc) >= max_velocity) return acc; // do not want any weird skips in my path for any reason
-            sum += acc;
+            sum += abs(acc);
         }
         return (sum / double(num_points));
     }
 
     inline double velocityF(Eigen::VectorXd &x, double constant, double s_dot, double s_dot_dot){
-        /*
-        double sum = 0;
-        for(short a = 0; a <= num_points; a++){
-            VectorXd c(3);
-            double constant = refresh_rate * a;
-            c << pow(constant, 2) / 2, pow(constant, 3) / 6, 5 * pow(constant, 4) / 24;
-            sum += x.transpose() * c + s_dot_dot * constant + s_dot;
-        }
-        return (sum / (num_points + 1)); // average velocity
-         */
         Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
         // double constant = refresh_rate * a;
         c << pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d;
@@ -114,7 +115,7 @@ protected:
             c << constant, pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d;
             double acc = x.transpose() * c + s_dot_dot;
             if(abs(acc) >= max_acceleration) return acc; // do not want any weird skips in my path for any reason
-            sum += acc;
+            sum += abs(acc);
         }
         return (sum / double(num_points));
     }
@@ -126,11 +127,6 @@ protected:
     }
 
     inline double jerkAvg(double average_acceleration){
-        /*
-        VectorXd c(3);
-        c << 1 , constant, pow(constant, 2) / 2;
-        return x.transpose() * c;
-        */
         return (average_acceleration / refresh_rate);
     }
 
