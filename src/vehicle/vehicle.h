@@ -15,9 +15,6 @@ protected:
     double s;
     double d;
 
-    double ps;
-    double pd;
-
     double velocity_s; // in m/s
     double velocity_d; // in m/s
 
@@ -28,8 +25,6 @@ public:
     vehicle(){
         s = 0;
         d = 0;
-        ps = 0;
-        pd = 0;
         velocity_s = 0;
         velocity_d = 0;
         acceleration_s = 0;
@@ -81,10 +76,8 @@ public:
         this->acceleration_d = acceleration_d;
     }
 
-    inline std::vector<double> getPredicted(){
-        ps = s + velocity_s * time_period + .5 * acceleration_s * pow(time_period, 2);
-        pd = d + velocity_d * time_period + .5 * acceleration_d * pow(time_period, 2);
-        return {ps, pd};
+    inline std::vector<double> getPredicted(double time){
+        return {calculateFutureS(s + velocity_s * time + acceleration_s * pow(time, 2) / 2), d + velocity_d * time + acceleration_d * pow(time, 2) / 2};
     }
 
     inline double getPredictedVelocityS(double time){
@@ -96,7 +89,7 @@ public:
     }
 
     inline double getPredictedS(double time){
-        return s + velocity_s * time + .5 * acceleration_s * pow(time, 2);
+        return calculateFutureS(s + velocity_s * time + .5 * acceleration_s * pow(time, 2));
     }
 
     inline double getPredictedD(double time){
@@ -106,7 +99,7 @@ public:
     inline void print(){
         std::cout << "[ s = " << s << ", d = " << d << ", velocity_s = " << velocity_s << ", acceleration_s = "
                   << acceleration_s << ", velocity_d = " << velocity_d << ", acceleration_d = " << acceleration_d
-                  << ", predicted_s = " << ps << ", predicted_d = " << pd << " ]" << std::endl;
+                  << " ]" << std::endl;
     }
 };
 

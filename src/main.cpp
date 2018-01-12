@@ -186,27 +186,24 @@ int main() {
                         next_y_vals.push_back(previous_path_y[a]);
                         // cout << "prev [ x:" << next_x_vals[a] << "\ty:" << next_y_vals[a] << " ]" << endl;
                     }
-                    /*
+
                     // going to generate behavior is a crash is imminent of number of points is less than required
-                    if(values.getBehavior(car.getLane()) == STOP || values.getBehavior(car.getLane()) == FOLLOW || size <= 20){
-                        sf.get();
-                        options = behaviorPlanner.plan();
+                    sf.get();
+                    options = behaviorPlanner.plan();
 
-                        trajectory.calculatePoints(options[0], options[1], size);
+                    trajectory.calculatePoints(options[0], options[1], size);
 
-                        vector<double> x_vals = trajectory.getXVals();
-                        vector<double> y_vals = trajectory.getYVals();
+                    vector<double> x_vals = trajectory.getXVals();
+                    vector<double> y_vals = trajectory.getYVals();
 
-                        // cout << "new points" << endl;
-                        for(short a = 0; a < x_vals.size(); a++){
-                            // if(trajectory.sfVals()[1] >= 8) break;
-                            next_x_vals.push_back(x_vals[a]);
-                            next_y_vals.push_back(y_vals[a]);
+                    // cout << "new points" << endl;
+                    for(short a = 0; a < x_vals.size(); a++){
+                        // if(trajectory.sfVals()[1] >= 8) break;
+                        next_x_vals.push_back(x_vals[a]);
+                        next_y_vals.push_back(y_vals[a]);
 
-                            // cout << "new [ x:" << x_vals[a] << "\ty: " << y_vals[a] << " ]" << endl;
-                        }
+                        // cout << "new [ x:" << x_vals[a] << "\ty: " << y_vals[a] << " ]" << endl;
                     }
-                    */
 
                     json msgJson;
 

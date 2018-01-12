@@ -62,27 +62,4 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
     *t << 0.0d, 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 6.0d;
     sf_dot_dot = (*t).transpose() * *s_option.vector;
     df_dot_dot = (*t).transpose() * *d_option.vector;
-
-    /*
-    time -= refresh_rate;
-    double sf_prev = calculatePoint(time, *s_option.vector);
-    double df_prev = calculatePoint(time, *d_option.vector);
-
-    sf_dot = (sf - sf_prev) / refresh_rate;
-    df_dot = (df - df_prev) / refresh_rate;
-
-    time -= refresh_rate;
-    double sf_prev2 = calculatePoint(time, *s_option.vector);
-    double df_prev2 = calculatePoint(time, *d_option.vector);
-
-
-    double sf_dot_prev = (sf_prev - sf_prev2) / refresh_rate;
-    double df_dot_prev = (df_prev - df_prev2) / refresh_rate;
-
-    sf_dot_dot = (sf_dot - sf_dot_prev) / refresh_rate;
-    df_dot_dot = (df_dot - df_dot_prev) / refresh_rate;
-     */
-
-    // cout << "sf: " << sf << "\tsf_dot: " << sf_dot << "\tsf_dot_dot: " << sf_dot_dot << endl;
-    // cout << "df: " << df << "\tdf_dot: " << df_dot << "\tdf_dot_dot: " << df_dot_dot << endl;
 }

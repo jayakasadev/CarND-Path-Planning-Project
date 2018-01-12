@@ -5,12 +5,12 @@
 #ifndef PATH_PLANNING_TRAFFIC_H
 #define PATH_PLANNING_TRAFFIC_H
 
-
-#include "vehicle.h"
 #include <chrono>
 #include <vector>
 
-#include "../constants/constants.h"
+#include "vehicle.h"
+#include "../constants/sensor_fusion_constants.h"
+
 
 using namespace std::chrono;
 
@@ -20,14 +20,12 @@ private:
 
     bool first;
 
-    const short search_field_timelimit = 500; // forget the car if I have not seen it in .5 second
-
     inline void checkOutdated() {
         // std::cout << "checkOutdated" << std::endl;
         duration<double, std::milli> time_span = high_resolution_clock::now() - last_Seen;
         short time = time_span.count();
         // std::cout << "time = " << time << std::endl;
-        if (time > search_field_timelimit) { // last
+        if (time > time_limit) { // last
             velocity_d = 0;
             velocity_s = 0;
             ps = 0;

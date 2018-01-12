@@ -6,7 +6,6 @@
 #define PATH_PLANNING_DRIVER_H
 
 #include "vehicle.h"
-#include "../constants/constants.h"
 
 class driver : public vehicle {
 public:

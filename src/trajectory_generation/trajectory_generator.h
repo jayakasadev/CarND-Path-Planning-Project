@@ -12,7 +12,8 @@
 #include <string>
 
 #include "../Eigen-3.3/Eigen/Dense"
-#include "../constants/constants.h"
+#include "../constants/road_constants.h"
+#include "../constants/trajectory_generation_constants.h"
 #include "../map/map.h"
 #include "../trajectory_option/trajectory_option.h"
 #include "../vehicle/driver.h"

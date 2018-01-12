@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "../Eigen-3.3/Eigen/Dense"
-#include "../constants/constants.h"
+#include "../constants/road_constants.h"
+#include "../constants/behavior_constants.h"
 #include "../enums/vehicle_behavior.h"
 #include "../scores/scores.h"
 #include "../vehicle/driver.h"

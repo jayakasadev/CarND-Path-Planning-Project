@@ -4,11 +4,12 @@
 #include <functional>
 #include <iostream>
 
-#include "../../constants/constants.h"
 #include "../../Eigen-3.3/Eigen/Dense"
 #include "../../scores/scores.h"
 #include "../../vehicle/driver.h"
 #include "../../trajectory_option/trajectory_option.h"
+#include "../../constants/tunable.h"
+#include "../../constants/trajectory_generation_constants.h"
 
 using namespace Eigen;
 using namespace std;
@@ -27,7 +28,7 @@ public:
     planner(){
         // setting the score function based on drive mode
         if(driveMode == REGULAR){
-            scoreFunction = [](double score){ return scalar * pow(score - 3750, 2);}; // favor median scores
+            scoreFunction = [](double score){ return pow(score - 3750, 2);}; // favor median scores
         } else if(driveMode == SPORT){
             scoreFunction = [](double score){ return -score + 7500;}; // favor larger legal scores
         } else {
@@ -56,7 +57,7 @@ protected:
             sf_dot = 0;
         } else if(behavior == vehicle_behavior::FOLLOW) {
             // std::cout << "FOLLOW " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = values->getDistanceFront(lane) + values->getVelocity(lane) * time_period - follow_buffer;
+            sf = values->getDistanceFront(lane) + values->getVelocity(lane) * time_period - vehicle_buffer;
             sf_dot = values->getVelocity(lane);
         } else if(behavior == vehicle_behavior::MERGE){
             // std::cout << "MERGE " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);

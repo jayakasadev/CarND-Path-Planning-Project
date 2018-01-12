@@ -13,9 +13,6 @@ void driver::initialize(double s, double d, double speed){
 
     this->acceleration_s = 0;
     this->acceleration_d = 0;
-
-    ps = calculateFutureS(s + this->velocity_s * time_period + .5 * this->acceleration_s * pow(time_period, 2));
-    pd = d + this->velocity_d * time_period + .5 * this->acceleration_d * pow(time_period, 2);
 }
 
 void driver::update(double s, double s_dot, double s_dot_dot, double d, double d_dot, double d_dot_dot){
@@ -26,9 +23,6 @@ void driver::update(double s, double s_dot, double s_dot_dot, double d, double d
     this->d = d;
     this->velocity_d = d_dot;
     this->acceleration_d = d_dot_dot;
-
-    ps = calculateFutureS(s + this->velocity_s * time_period + .5 * this->acceleration_s * pow(time_period, 2));
-    pd = d + this->velocity_d * time_period + .5 * this->acceleration_d * pow(time_period, 2);
 }
 
 void driver::print(){
