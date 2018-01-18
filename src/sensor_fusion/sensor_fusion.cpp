@@ -1,13 +1,10 @@
-//
-// Created by jay on 12/5/17.
-//
-
 #include "sensor_fusion.h"
 
 void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
     // cout << "sensor_fusion::predict" << endl;
     // read everything into the hash_map and score the lane it is in
-
+    double search_radius_at_curr_v = getSearchRadius();
+    // std::cout << "search radius: " << search_radius_at_curr_v << std::endl;
     for(short a  = 0; a < sensor_fusion.size(); a++){
         double id = sensor_fusion[a][0];
         // double x = sensor_fusion[a][1];
@@ -26,31 +23,19 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
 
             // hashmap.at(id)->print();
 
-            // score the vehicles here
-            // cout << "velocity: " << velocity << endl;
-            if(abs(car->getS() - s) <= spacing){
-                this->setScore(car->getS(), car->getD(), s, d, hashmap.at(id)->getVelocityS());
-            }
-            double t1 = (- car->getVelocityS() + sqrt(pow(car->getVelocityS(), 2) - 4 * .5 * car->getAccelerationS() * (s - car->getS()))) / (car->getAccelerationS());
-            double t2 = (- car->getVelocityS() - sqrt(pow(car->getVelocityS(), 2) - 4 * .5 * car->getAccelerationS() * (s - car->getS()))) / (car->getAccelerationS());
-
-            double max_time = max(t1, t2);
-            // cout << "time: " << max_time << endl;
-            if(isnan(max_time)){
-                max_time = 0;
+            // is the vehicle near me?
+            if(abs(car->getS() - s) <= search_radius_at_curr_v){
+                detected->add(*hashmap.at(id));
             }
 
-            for(double time = time_period; time <= max(max_time, double(time_period)); time += 0.1){
-                if(abs(hashmap.at(id)->getPredictedS(time) - car->getS()) <= spacing){
-                    // vector<double> predicted = hashmap.at(id)->getPredicted();
-                    // cout << "s: " << hashmap.at(a)->getPredictedS(time) << " || d: " << hashmap.at(a)->getPredictedD(time) << endl;
-
-                    setScore(car->getS(), car->getD(), hashmap.at(id)->getPredictedS(time),
-                             hashmap.at(id)->getPredictedD(time), hashmap.at(id)->getPredictedVelocityS(time));
+            // check if the vehicle passes by my car at any point in the next second
+            for(double time = refresh_rate; time <= time_period; time += refresh_rate){
+                if(abs(hashmap.at(id)->getPredictedS(time) - car->getS()) <= search_radius_at_curr_v){
+                    detected->add(*hashmap.at(id));
                 }
             }
         }
     }
 
-    values->printScores(); // print the values as a test for now
+    // detected->print();
 }

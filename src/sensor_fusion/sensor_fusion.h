@@ -4,27 +4,25 @@
 #include <unordered_map>
 
 #include "../utilities/json.hpp"
-#include "../scores/scores.h"
 #include "../vehicle/driver.h"
 #include "../vehicle/traffic.h"
 #include "../constants/sensor_fusion_constants.h"
-
-using namespace std;
+#include "../detections/detections.h"
 
 class sensorfusion {
 private:
     std::unordered_map<short, traffic *> hashmap;
-    scores *values;
     driver * car;
+    detections * detected;
 
     inline float getSearchRadius() {
         return search_radius + growth_rate * car->getVelocityS();
     }
 
 public:
-    sensorfusion(driver &car, scores &scores){
+    sensorfusion(driver &car, detections &detected){
         this->car = &car;
-        this->values = &scores;
+        this->detected = &detected;
     }
 
     ~sensorfusion(){

@@ -13,10 +13,9 @@
 
 #include "../Eigen-3.3/Eigen/Dense"
 #include "../constants/road_constants.h"
-#include "../constants/trajectory_generation_constants.h"
 #include "../map/map.h"
-#include "../trajectory_option/trajectory_option.h"
 #include "../vehicle/driver.h"
+#include "../trajectory/trajectory.h"
 
 using namespace Eigen;
 using namespace std;
@@ -68,7 +67,7 @@ public:
         outputfile.close();
     }
 
-    void calculatePoints(trajectory_option &s_option, trajectory_option &d_option, short size);
+    void calculatePoints(trajectory &s_option, trajectory &d_option, short size);
 
     inline std::vector<double> getXVals(){
         return x_vals;

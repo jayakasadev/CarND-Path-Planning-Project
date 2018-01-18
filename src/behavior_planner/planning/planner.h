@@ -1,166 +1,80 @@
 #ifndef PATH_PLANNING_PLANNER_H
 #define PATH_PLANNING_PLANNER_H
 
-#include <functional>
-#include <iostream>
-
-#include "../../Eigen-3.3/Eigen/Dense"
-#include "../../scores/scores.h"
 #include "../../vehicle/driver.h"
-#include "../../trajectory_option/trajectory_option.h"
-#include "../../constants/tunable.h"
-#include "../../constants/trajectory_generation_constants.h"
+#include "../../detections/detections.h"
+#include "../trajectory_option/trajectory_option.h"
+#include "../../trajectory/trajectory.h"
 
-using namespace Eigen;
 using namespace std;
 
 class planner{
 
 public:
-    trajectory_option option_s;
-    trajectory_option option_d;
 
-    // double s_v;
-    // double s_a;
-    // double d_v;
-    // double d_a;
+    planner(driver &car, detections &detected, vector<trajectory_option *> &calculators, short lane){
+        cout << "planner constructor" << endl;
+        // cout << "city_planner" << endl;
+        this->car = &car;
+        this->calculators = calculators;
+        this->detected = &detected;
+        this->lane = lane;
 
-    planner(){
-        // setting the score function based on drive mode
-        if(driveMode == REGULAR){
-            scoreFunction = [](double score){ return pow(score - 3750, 2);}; // favor median scores
-        } else if(driveMode == SPORT){
-            scoreFunction = [](double score){ return -score + 7500;}; // favor larger legal scores
-        } else {
-            // score function does nothing special
-            scoreFunction = [](double score){ return score;};
+        for(short a = 0; a < (num_generated_s_points * (num_points + 1)); a++){
+            // text all possible time T for each generated point before moving to the next
+            trajectory * s_traj = new trajectory(trajectory_type::S, time_period + (a % (num_points + 1)) * refresh_rate);
+            s_trajectories.push_back(s_traj);
+        }
+
+        for(short a = 0; a < (num_points + 1); a++){
+            // text all possible time T for each generated point before moving to the next
+            trajectory * traj_d = new trajectory(trajectory_type::D, time_period + a * refresh_rate);
+            d_trajectories.push_back(traj_d);
         }
     }
 
-    ~planner(){}
+    ~planner(){
+        cout << "planner destructor" << endl;
+        for(short a = 0; a < s_trajectories.size(); a++){
+            delete s_trajectories[a];
+        }
+        s_trajectories.clear();
+
+        for(short a = 0; a <  d_trajectories.size(); a++){
+            delete d_trajectories[a];
+        }
+        d_trajectories.clear();
+    }
 
 protected:
-    std::function<double(double)> scoreFunction;
-
-    driver *car;
-    scores *values;
+    vector<trajectory_option *> calculators;
+    vector<trajectory *> s_trajectories;
+    vector<trajectory *> d_trajectories;
+    vector<double> generated;
+    driver * car;
+    detections * detected;
     short lane;
 
-    inline void getSfVals(double &sf, double &sf_dot, short lane){
-        // values->printScores();
-        // car->print();
-        // std::cout << "behavior: " << values->getBehavior(lane);
-        vehicle_behavior behavior = values->getBehavior(lane);
-        if(behavior == vehicle_behavior::STOP) {
-            // std::cout << "STOP " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = values->getDistanceFront(lane);
-            sf_dot = 0;
-        } else if(behavior == vehicle_behavior::FOLLOW) {
-            // std::cout << "FOLLOW " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = values->getDistanceFront(lane) + values->getVelocity(lane) * time_period - vehicle_buffer;
-            sf_dot = values->getVelocity(lane);
-        } else if(behavior == vehicle_behavior::MERGE){
-            // std::cout << "MERGE " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = values->getDistanceFront(lane);
-            sf_dot = values->getVelocity(lane);
-        } else{
-            // std::cout << "KEEP VELOCITY " << " s: " << car->getS() << " d: " << values->getDistanceFront(lane);
-            sf = values->getDistanceFront(lane);
-            sf_dot = values->getVelocity(lane);
+    /**
+     * Method to generate random points
+     */
+    inline void generatePoints(){
+        generated.clear();
+        for(short a = 0; a < num_generated_s_points; a++){
+            double random = (double)rand() / RAND_MAX;
+            generated.push_back(s_search_start_point + random * (spacing - s_search_start_point));
         }
-        // std::cout << " sf: " << sf << " sf_dot: " << sf_dot << std::endl;
     }
 
-    inline double positionF(Eigen::VectorXd &x, double constant, double s, double s_dot, double s_dot_dot){
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        c << pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d, pow(constant, 5.0d) / 120.0d;
-        return x.transpose() * c + s_dot_dot * pow(constant, 2.0d) / 2.0d + s_dot * constant + s;
-    }
-
-    inline bool moveForwardOnly(Eigen::VectorXd &x, double s, double s_dot, double s_dot_dot){
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        for(short a = 1; a <= num_points; a++){
-            double constant = refresh_rate * double(a);
-            c << pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d, pow(constant, 5.0d) / 120.0d;
-            double acc = x.transpose() * c + s_dot_dot * pow(constant, 2.0d) / 2.0d + s_dot * constant + s;
-            if((acc - s) <= 0) return false; // do not want any weird skips in my path for any reason
+    /**
+     * Method to print randomly generated points
+     */
+    inline void printGenerated(){
+        for(short a = 0; a < generated.size(); a++){
+            cout << "generated: " << generated[a] << endl;
         }
-        return true;
     }
 
-    inline double velocityAvg(Eigen::VectorXd &x, double s_dot, double s_dot_dot){
-        double sum = 0;
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        for(short a = 1; a <= num_points; a++){
-            double constant = refresh_rate * double(a);
-            c << pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d;
-            double acc = x.transpose() * c + s_dot_dot * constant + s_dot;
-            if(abs(acc) >= max_velocity) return acc; // do not want any weird skips in my path for any reason
-            sum += abs(acc);
-        }
-        return (sum / double(num_points));
-    }
-
-    inline double velocityF(Eigen::VectorXd &x, double constant, double s_dot, double s_dot_dot){
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        // double constant = refresh_rate * a;
-        c << pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d, pow(constant, 4.0d) / 24.0d;
-        return x.transpose() * c + s_dot_dot * constant + s_dot;
-    }
-
-    inline double accelerationAvg(Eigen::VectorXd &x, double s_dot_dot){
-        double sum = 0;
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        for(short a = 1; a <= num_points; a++){
-            double constant = refresh_rate * double(a);
-            c << constant, pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d;
-            double acc = x.transpose() * c + s_dot_dot;
-            if(abs(acc) >= max_acceleration) return acc; // do not want any weird skips in my path for any reason
-            sum += abs(acc);
-        }
-        return (sum / double(num_points));
-    }
-
-    inline double accelerationF(Eigen::VectorXd &x, double constant, double s_dot_dot){
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        c << constant, pow(constant, 2.0d) / 2.0d, pow(constant, 3.0d) / 6.0d;
-        return x.transpose() * c + s_dot_dot;
-    }
-
-    inline double jerkAvg(double average_acceleration){
-        return (average_acceleration / refresh_rate);
-    }
-
-    inline double squareJerk(Eigen::VectorXd &x, double constant){
-        Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
-        c << 1.0d , constant, pow(constant, 2.0d) / 2.0d;
-        return pow(x.transpose() * c, 2.0d);
-    }
-
-    inline VectorXd sharedCalc(double time, double x, double x_dot, double x_dot_dot, double xf, double xf_dot, double xf_dot_dot){
-        /*
-        std::cout << "sharedCalc: [ time = " << time << ", x = " << x << ", x_dot = " << x_dot << ", x_dot_dot = "
-                  << x_dot_dot << ", xf = " << xf << ", xf_dot = " << xf_dot << ", xf_dot_dot = " << xf_dot_dot
-                  << std::endl;
-        */
-        // std::cout << "\nA^-1:\n" << Ai << std::endl;
-
-        MatrixXd A = MatrixXd::Zero(3, 3);
-        VectorXd B = VectorXd::Zero(3);
-
-        A << pow(time, 3), pow(time, 4), pow(time, 5),
-                3.0d * pow(time, 2), 4.0d *pow(time, 3), 5.0d * pow(time, 4),
-                6.0d * time, 12.0d * pow(time, 2), 20.0d * pow(time, 3);
-
-        B << (xf - (x + x_dot * time + 0.5 * x_dot_dot * pow(time, 2))),
-                (xf_dot - (x_dot + x_dot_dot * time)),
-                (xf_dot_dot - x_dot_dot);
-
-        // std::cout << "B = " << B.transpose() << std::endl;
-
-        return A.inverse() * B;
-        // std::cout << c.transpose() << std::endl;
-    }
 };
 
 #endif //PATH_PLANNING_PLANNER_H

@@ -7,8 +7,8 @@
 
 #include "tunable.h"
 
-const double max_velocity_mps = max_velocity_legal * mph_to_mps;
+const double max_velocity_mps = max_velocity_desired * mph_to_mps;
 
-const float spacing = max_velocity_mps;
+const double spacing = max_velocity_mps;
 
 #endif //PATH_PLANNING_BEHAVIOR_CONSTANTS_H

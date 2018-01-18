@@ -1,14 +1,6 @@
-//
-// Created by jay on 12/5/17.
-//
-
 #include "trajectory_generator.h"
 
-double trajectory_generator::calculatePoint(double &time, VectorXd &constants){
-    return (*t).transpose() * constants;
-}
-
-void trajectory_generator::calculatePoints(trajectory_option &s_option, trajectory_option &d_option, short size){
+void trajectory_generator::calculatePoints(trajectory &s_option, trajectory &d_option, short size){
     // cout << "trajectory_generator::calculatePoints\t" << size << endl;
     x_vals.clear();
     y_vals.clear();
@@ -23,11 +15,6 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
     double s = 0;
     double d = 0;
     for(short a = 1; a <= num_points - size; a++){
-        time = a * refresh_rate;
-        *t << 1.0, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 3.0d, pow(time, 4.0d) / 4.0d, pow(time, 5.0d) / 5.0d;
-        s = (*t).transpose() * *s_option.vector;
-        d = (*t).transpose() * *d_option.vector;
-
         // *t << 0.0d, 0.0d, 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d;
         // double jerk_s = (*t).transpose() * *s_option.vector;
         // double jerk_d = (*t).transpose() * *d_option.vector;
@@ -56,10 +43,10 @@ void trajectory_generator::calculatePoints(trajectory_option &s_option, trajecto
     df = d;
 
     *t << 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 6.0d, pow(time, 4.0d) / 24.0d;
-    sf_dot = (*t).transpose() * *s_option.vector;
-    df_dot = (*t).transpose() * *d_option.vector;
+    sf_dot = (*t).transpose() * s_option.getVector();
+    df_dot = (*t).transpose() * d_option.getVector();
 
     *t << 0.0d, 0.0d, 1.0d, time, pow(time, 2.0d) / 2.0d, pow(time, 3.0d) / 6.0d;
-    sf_dot_dot = (*t).transpose() * *s_option.vector;
-    df_dot_dot = (*t).transpose() * *d_option.vector;
+    sf_dot_dot = (*t).transpose() * s_option.getVector();
+    df_dot_dot = (*t).transpose() * d_option.getVector();
 }

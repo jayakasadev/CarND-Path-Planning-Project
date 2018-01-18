@@ -7,7 +7,7 @@
 
 #include "../Eigen-3.3/Eigen/Dense"
 #include "../constants/road_constants.h"
-#include "../constants/sensor_fusion_constants.h"
+#include "../constants/drive_mode_constants.h"
 
 class regular_mode {
 protected:
@@ -21,9 +21,9 @@ protected:
 public:
 
     regular_mode(){
-        buffer_distance = buffer_interval * 2; // 5m
-        desired_acceleration = max_acceleration * (1 / 3); // 3.33 m/s/s
-        desired_jerk = max_jerk * (1 / 3); // 16.67 m/s/s/s
+        buffer_distance = buffer_interval * regular_buffer_multiple; // 5m
+        desired_acceleration = max_acceleration * regular_rate; // 3.33 m/s/s
+        desired_jerk = max_jerk * regular_rate; // 16.67 m/s/s/s
     }
 
     ~regular_mode(){}
@@ -78,9 +78,9 @@ public:
 class sport_mode : public regular_mode{
 public:
     sport_mode(){
-        buffer_distance = buffer_interval; // 2.5m
-        desired_acceleration = max_acceleration * (1 / 2); // 5 m/s/s
-        desired_jerk = max_jerk * (1 / 2); // 25 m/s/s/s
+        buffer_distance = buffer_interval * sport_buffer_multiple; // 2.5m
+        desired_acceleration = max_acceleration * sport_rate; // 5 m/s/s
+        desired_jerk = max_jerk * sport_rate; // 25 m/s/s/s
     }
 
     ~sport_mode(){}
@@ -89,9 +89,9 @@ public:
 class eco_mode : public regular_mode{
 public:
     eco_mode(){
-        buffer_distance = buffer_interval * 3; // 7.5m
-        desired_acceleration = max_acceleration * (1 / 5); // 2 m/s/s
-        desired_jerk = max_jerk * (1 / 5); // 10 m/s/s/s
+        buffer_distance = buffer_interval * eco_buffer_multiple; // 7.5m
+        desired_acceleration = max_acceleration * eco_rate; // 2 m/s/s
+        desired_jerk = max_jerk * eco_rate; // 10 m/s/s/s
     }
 
     ~eco_mode(){}

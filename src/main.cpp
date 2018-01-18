@@ -5,9 +5,9 @@
 #include "utilities/json.hpp"
 #include "map/map.h"
 #include "vehicle/vehicle.h"
-#include "scores/scores.h"
 #include "sensor_fusion/sensor_fusion.h"
 #include "trajectory_generation/trajectory_generator.h"
+#include "behavior_planner/behavior_planner.h"
 
 using namespace std;
 
@@ -36,19 +36,17 @@ int main() {
 
     driver car;
 
-    scores values;
+    detections detected;
 
-    sensorfusion sensorFusion(car, values);
+    sensorfusion sensorFusion(car, detected);
 
-    behavior_planner behaviorPlanner(car, values);
+    behavior_planner behaviorPlanner(car, detected);
 
-    trajectory_generator trajectory(mapData);
-
-    vector<trajectory_option> options;
+    trajectory_generator generator(mapData);
 
     short count = 0;
 
-    h.onMessage([&mapData, &car, &values, &sensorFusion, &trajectory, &behaviorPlanner, &options, &count](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
+    h.onMessage([&mapData, &car, &detected, &sensorFusion, &generator, &behaviorPlanner, &count](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -114,54 +112,10 @@ int main() {
                         use the previous path's endpoint as a starting reference
                         Redefine reference state as previous path end point
 
-                        const double ref_x = previous_path_x[size - 1];
-                        const double ref_y = previous_path_y[size - 1];
-                        // make sure the path is tangent to the the angle of the car by using the last two points in
-                        // the previous path
-                        const double ref_x_prev = previous_path_x[size - 2];
-                        const double ref_y_prev = previous_path_y[size - 2];
-
-                        const double ref_x_prev_prev = previous_path_x[size - 3];
-                        const double ref_y_prev_prev = previous_path_y[size - 3];
-
-                        cout << ref_x << endl;
-                        cout << ref_y << endl;
-                        cout << ref_x_prev << endl;
-                        cout << ref_y_prev << endl;
-                        cout << ref_x_prev_prev << endl;
-                        cout << ref_y_prev_prev << endl;
-                        cout << "\t[ s = " << end_path_s << ", d = " << end_path_d << " ]" << endl;
-
-                        double ref_yaw = calculateYaw(ref_y, ref_y_prev, ref_x, ref_x_prev);
-                        cout << "calculated yaw in radians: " << ref_yaw << endl;
-                        cout << "\tcalculated yaw in degrees: " << rad2deg(ref_yaw) << endl;
-
-                        double ref_yaw2 = calculateYaw(ref_y_prev, ref_y_prev_prev, ref_x_prev, ref_x_prev_prev);
-                        cout << "calculated yaw in radians: " << ref_yaw << endl;
-                        cout << "\tcalculated yaw2 in degrees: " << rad2deg(ref_yaw2) << endl;
-
-                        vector<double> sAndD = mapData.getFrenet(ref_x, ref_y, rad2deg(ref_yaw));
-                        cout << "\t[ s = " << sAndD[0] << ", d = " << sAndD[1] << " ]" << endl;
-                        cout << "\t[ s = " << end_path_s << ", d = " << end_path_d << " ]" << endl;
-
-                        double vx = (ref_x - ref_x_prev) / refresh_rate;
-                        double vy = (ref_y - ref_y_prev) / refresh_rate;
-                        double vx2 = (ref_x_prev - ref_x_prev_prev) / refresh_rate;
-                        double vy2 = (ref_y_prev - ref_y_prev_prev) / refresh_rate;
-
-                        cout << "vx: " << vx << "\tvy: " << vy << endl;
-                        cout << "vx2: " << vx2 << "\tvy2: " << vy2 << endl;
-
-                        double velocity = sqrt(pow(vx, 2) + pow(vy, 2));
-                        cout << "\tcalculated velocity: " << velocity << endl;
-                        double velocity2 = sqrt(pow(vx2, 2) + pow(vy2, 2));
-                        // cout << "\tcalculated velocity2: " << velocity2 << endl;
-                        double acceleration = ((velocity - velocity2) / refresh_rate);
-                        cout << "\tacceleration: " << acceleration << endl;
                         */
 
-                        vector<double> sf = trajectory.sfVals();
-                        vector<double> df = trajectory.dfVals();
+                        vector<double> sf = generator.sfVals();
+                        vector<double> df = generator.dfVals();
                         cout << "s: " << sf[0] << "\tvelocity: " << sf[1] << "\tacceleration: " << sf[2];
                         cout << "\td: " << df[0] << "\tvelocity: " << df[1] << "\tacceleration: " << df[2] << endl;
                         car.update(end_path_s, sf[1], sf[2], end_path_d, df[1], df[2]);
@@ -169,11 +123,9 @@ int main() {
                         // car.update(end_path_s, velocity, acceleration, end_path_d, df[1], df[2]);
                     }
                     car.print();
+                    detected.reset();
 
-
-
-                    future<void> sf(async(launch::async, [&sensorFusion, &values, &sensor_fusion_data, &previous_path_x, &previous_path_y, &car, &size]{
-                        values.reset(car.getS(), car.getLane());
+                    future<void> sf(async(launch::async, [&sensorFusion, &sensor_fusion_data, &previous_path_x, &previous_path_y, &car, &size]{
                         sensorFusion.predict(sensor_fusion_data, size);
                     }));
 
@@ -188,9 +140,9 @@ int main() {
                     }
 
                     // going to generate behavior is a crash is imminent of number of points is less than required
-                    sf.get();
-                    options = behaviorPlanner.plan();
-
+                    // sf.get();
+                    vector<trajectory> options = behaviorPlanner.plan();
+                    /*
                     trajectory.calculatePoints(options[0], options[1], size);
 
                     vector<double> x_vals = trajectory.getXVals();
@@ -204,6 +156,7 @@ int main() {
 
                         // cout << "new [ x:" << x_vals[a] << "\ty: " << y_vals[a] << " ]" << endl;
                     }
+                    */
 
                     json msgJson;
 

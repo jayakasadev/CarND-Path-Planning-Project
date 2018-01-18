@@ -1,0 +1,8 @@
+#ifndef PATH_PLANNING_TRAJECTORY_TYPE_H
+#define PATH_PLANNING_TRAJECTORY_TYPE_H
+
+enum trajectory_type{
+    S, D
+};
+
+#endif //PATH_PLANNING_TRAJECTORY_TYPE_H

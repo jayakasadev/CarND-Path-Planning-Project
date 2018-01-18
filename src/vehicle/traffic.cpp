@@ -1,7 +1,3 @@
-//
-// Created by jay on 12/9/17.
-//
-
 #include "traffic.h"
 
 void traffic::update(double vx, double vy, double s, double d){
@@ -14,7 +10,7 @@ void traffic::update(double vx, double vy, double s, double d){
     } else {
         checkOutdated(); // check if the measurements are outdated
         double temp = sqrt(pow(vx, 2) + pow(vy, 2)); // vx and vy are in m/s;
-        duration<double> time_span = high_resolution_clock::now() - last_Seen;
+        std::chrono::duration<double> time_span = std::chrono::high_resolution_clock::now() - last_Seen;
         double time = time_span.count();
         this->acceleration_s = (temp - this->velocity_s) / time;
         this->velocity_s = temp;
@@ -23,7 +19,7 @@ void traffic::update(double vx, double vy, double s, double d){
         this->acceleration_d = (temp - this->velocity_d) / time;
         this->velocity_d = temp;
     }
-    last_Seen = high_resolution_clock::now(); // update last seen time
+    last_Seen = std::chrono::high_resolution_clock::now(); // update last seen time
 
     this->s = s;
     this->d = d;
