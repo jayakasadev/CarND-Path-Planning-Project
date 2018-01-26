@@ -43,7 +43,7 @@ int main() {
 
     try{
         behavior_planner_factory factory;
-        behaviorPlanner = factory.getInstance(car, costFunctions);
+        behaviorPlanner = std::move(factory.getInstance(car, costFunctions));
     } catch (exception& e){
         cerr << e.what() << endl;
         return -1;

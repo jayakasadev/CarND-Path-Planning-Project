@@ -10,7 +10,7 @@ std::unique_ptr<behavior_planner> behavior_planner_factory::getInstance(std::sha
     if(cityPlanners->isEmpty() || highwayPlanners->isEmpty()){
         throw std::logic_error("behavior planner was not properly built");
     }
-    std::unique_ptr<behavior_planner> instance = make_unique<behavior_planner>(car, cityPlanners, highwayPlanners);
+    std::unique_ptr<behavior_planner> instance = make_unique<behavior_planner>(car, std::move(cityPlanners), std::move(highwayPlanners));
     return instance;
 }
 

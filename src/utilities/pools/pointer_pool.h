@@ -10,7 +10,7 @@ template <class T>
 class pointer_pool{
 public:
     pointer_pool(){
-        std::cout << "pointer_pool constructor" << std::endl;
+        // std::cout << "pointer_pool constructor" << std::endl;
     }
 
     ~pointer_pool(){
@@ -47,7 +47,7 @@ protected:
     std::deque<std::shared_ptr<T>> pool; // internally stored in shared_ptr
 public:
     shared_pool() : pointer_pool<T>(){
-        std::cout << "shared_pool constructor" << std::endl;
+        // std::cout << "shared_pool constructor" << std::endl;
         index = 0;
     }
 
@@ -122,7 +122,7 @@ protected:
     std::deque<std::unique_ptr<T>> pool; // internally stored in shared_ptr
 public:
     unique_pool() : pointer_pool<T>(){
-        std::cout << "unique_pool constructor" << std::endl;
+        // std::cout << "unique_pool constructor" << std::endl;
         index = 0;
     }
 

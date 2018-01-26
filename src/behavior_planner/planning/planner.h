@@ -51,6 +51,12 @@ public:
         this->calculation_s = planner.calculation_s;
         this->calculation_d = planner.calculation_d;
         this->lane = planner.lane;
+
+        /*
+        std::cout << "lane: " << lane << std::endl;
+        std::cout << "calculation_s: " << calculation_s->size() << std::endl;
+        std::cout << "calculation_d: " << calculation_d->size() << std::endl;
+         */
     }
 
     void setLane(short lane){

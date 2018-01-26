@@ -29,6 +29,11 @@ public:
         // std::cout << "points copy constructor" << std::endl;
         this->calculators = points.calculators;
         this->calculated_points = points.calculated_points;
+
+        /*
+        std::cout << "calculators: " << calculators->size() << std::endl;
+        std::cout << "calculated_points: " << calculated_points->size() << std::endl;
+         */
     }
 
     void calculate(double s, double d);

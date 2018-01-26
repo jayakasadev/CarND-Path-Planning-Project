@@ -2,8 +2,6 @@
 #define PATH_PLANNING_OBJECT_POOL_H
 
 #include <deque>
-#include <mutex>
-#include <condition_variable>
 #include <iostream>
 
 template <class T>
@@ -12,7 +10,7 @@ protected:
     std::deque<T> pool;
 public:
     object_pool(){
-        std::cout << "object_pool constructor" << std::endl;
+        // std::cout << "object_pool constructor" << std::endl;
     }
 
     ~object_pool(){

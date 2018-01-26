@@ -23,13 +23,12 @@ private:
 
 public:
 
-    behavior_planner(std::shared_ptr<driver> car, std::unique_ptr<pointer_pool<planner>> &cityPlanner,
-                     std::unique_ptr<pointer_pool<planner>> &highwayPlanner){
-        std::cout << "behavior_planner constructor" << std::endl;
+    behavior_planner(std::shared_ptr<driver> car, std::unique_ptr<pointer_pool<planner>> city,
+                     std::unique_ptr<pointer_pool<planner>> highway){
+        // std::cout << "behavior_planner constructor" << std::endl;
         this->car = car;
-        this->cityPlanners = std::move(cityPlanners);
-        this->highwayPlanners = std::move(highwayPlanners);
-
+        this->cityPlanners = std::move(city);
+        this->highwayPlanners = std::move(highway);
     }
 
     ~behavior_planner(){

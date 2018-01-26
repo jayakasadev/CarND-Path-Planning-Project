@@ -26,7 +26,7 @@ private:
 public:
 
     cost_function(std::shared_ptr<pointer_pool<traffic>> detected){
-        std::cout << "cost_function constructor" << std::endl;
+        // std::cout << "cost_function constructor" << std::endl;
         this->detected = detected;
         setDriveMode();
     }

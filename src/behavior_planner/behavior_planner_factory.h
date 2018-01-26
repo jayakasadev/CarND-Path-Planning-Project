@@ -26,10 +26,13 @@ private:
 
 public:
     behavior_planner_factory(){
-        std::cout << "behavior_planner_factory constructor" << std::endl;
+        // std::cout << "behavior_planner_factory constructor" << std::endl;
     }
     ~behavior_planner_factory(){
         std::cout << "behavior_planner_factory destructor" << std::endl;
+        assert(!cityPlanners); // making sure that the factory no longer owns the planner pools
+        assert(!highwayPlanners); // making sure that the factory no longer owns the planner pools
+        assert(calculators.use_count() > 0); // make sure the calculators are shared
     }
 
     std::unique_ptr<behavior_planner> getInstance(std::shared_ptr<driver> car, std::shared_ptr<cost_function> costFunction);

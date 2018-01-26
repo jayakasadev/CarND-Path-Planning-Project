@@ -13,15 +13,25 @@ private:
 
 public:
     city_planner() : planner(){
-        std::cout << "city_planner constructor" << std::endl;
+        // std::cout << "city_planner constructor" << std::endl;
     }
 
     ~city_planner(){
         std::cout << "city_planner destructor" << std::endl;
     }
 
-    city_planner(const city_planner &city_planner){
+    city_planner(const city_planner &planner){
         std::cout << "city_planner copy constructor" << std::endl;
+        this->car = planner.car;
+        this->calculation_s = planner.calculation_s;
+        this->calculation_d = planner.calculation_d;
+        this->lane = planner.lane;
+
+        /*
+        std::cout << "lane: " << lane << std::endl;
+        std::cout << "calculation_s: " << calculation_s->size() << std::endl;
+        std::cout << "calculation_d: " << calculation_d->size() << std::endl;
+         */
     }
 
     void calculate();
