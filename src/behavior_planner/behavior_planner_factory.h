@@ -15,6 +15,8 @@
 #include "../utilities/unique_ptr_helper.h"
 #include "../utilities/pools/synch_pool.h"
 #include "../cost_functions/cost_function.h"
+#include "planning/city_planner.h"
+#include "planning/highway_planner.h"
 
 class behavior_planner_factory{
 private:
@@ -35,7 +37,9 @@ public:
         assert(calculators.use_count() > 0); // make sure the calculators are shared
     }
 
-    std::unique_ptr<behavior_planner> getInstance(std::shared_ptr<driver> car, std::shared_ptr<cost_function> costFunction);
+    std::unique_ptr<behavior_planner> getInstance(std::shared_ptr<driver> car,
+                                                  std::shared_ptr<cost_function> costFunction,
+                                                  std::shared_ptr<std::vector<trajectory>> path);
 };
 
 

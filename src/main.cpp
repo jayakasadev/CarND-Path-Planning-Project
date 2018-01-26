@@ -39,17 +39,19 @@ int main() {
 
     std::unique_ptr<sensorfusion> sensorFusion = make_unique<sensorfusion>(car, detected);
 
+    std::shared_ptr<vector<trajectory>> path = std::make_shared<vector<trajectory>>();
+
     unique_ptr<behavior_planner> behaviorPlanner;
 
     try{
         behavior_planner_factory factory;
-        behaviorPlanner = std::move(factory.getInstance(car, costFunctions));
+        behaviorPlanner = std::move(factory.getInstance(car, costFunctions, path));
     } catch (exception& e){
         cerr << e.what() << endl;
         return -1;
     }
 
-    std::unique_ptr<trajectory_generator> generator = make_unique<trajectory_generator>();
+    std::unique_ptr<trajectory_generator> generator = make_unique<trajectory_generator>(path);
 
     short count = 0;
 

@@ -1,16 +1,16 @@
 #include "behavior_planner_factory.h"
-#include "planning/city_planner.h"
-#include "planning/highway_planner.h"
 
 
-std::unique_ptr<behavior_planner> behavior_planner_factory::getInstance(std::shared_ptr<driver> car, std::shared_ptr<cost_function> costFunction){
+std::unique_ptr<behavior_planner> behavior_planner_factory::getInstance(std::shared_ptr<driver> car,
+                                                                        std::shared_ptr<cost_function> costFunction,
+                                                                        std::shared_ptr<std::vector<trajectory>> path){
     // std::cout << "behavior_planner_factory::getInstance" << std::endl;
     build(car, costFunction);
     // std::cout << "build complete" << std::endl;
     if(cityPlanners->isEmpty() || highwayPlanners->isEmpty()){
         throw std::logic_error("behavior planner was not properly built");
     }
-    std::unique_ptr<behavior_planner> instance = make_unique<behavior_planner>(car, std::move(cityPlanners), std::move(highwayPlanners));
+    std::unique_ptr<behavior_planner> instance = make_unique<behavior_planner>(car, std::move(cityPlanners), std::move(highwayPlanners), path);
     return instance;
 }
 
