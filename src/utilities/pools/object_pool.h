@@ -17,8 +17,15 @@ public:
         std::cout << "object_pool destructor" << std::endl;
     }
 
-    T acquire(){
-        if(this->pool[index] == NULL){
+    inline void add(T& obj){
+        this->pool.push_back(obj);
+    }
+
+    T& acquire(){
+        if(this->pool.size() == 0){
+            throw std::invalid_argument("there are no objects in pool");
+        }
+        else if(this->pool[index] == NULL){
             throw std::invalid_argument("there is an object at index in pool");
         }
         T ptr = this->pool.front();
@@ -26,7 +33,7 @@ public:
         return ptr;
     }
 
-    T acquire(short index){
+    T& acquire(short index){
         if(this->pool.size() == 0){
             throw std::invalid_argument("there are no objects in pool");
         }
@@ -38,14 +45,14 @@ public:
         return ptr;
     }
 
-    inline void release(T obj, short index){
+    inline void release(T& obj, short index){
         if(this->pool[index] != NULL){
             throw std::invalid_argument("there is an object at index");
         }
         this->pool.insert(pool.begin() + index, obj);
     }
 
-    inline void release(T obj){
+    inline void release(T& obj){
         this->pool.push_back(obj);
     }
 
@@ -61,10 +68,16 @@ public:
         return pool.size();
     }
 
-    void print() {
+    virtual std::ostream& print(std::ostream& os) const {
+        os << "object_pool" << std::endl;
         for(short a = 0; a < pool.size(); a++){
-            std::cout << this->pool[a] << std::endl;
+            os << pool[a] << std::endl;
         }
+        return os;
+    }
+
+    friend std::ostream& operator <<(std::ostream& os, const object_pool& pool){
+        return pool.print(os);
     }
 };
 

@@ -21,31 +21,26 @@ using namespace std;
 
 class trajectory_generator {
 private:
-    std::vector<double> x_vals;
-    std::vector<double> y_vals;
-    const map_data mapData;
+    std::shared_ptr<std::vector<double>> x_vals;
+    std::shared_ptr<std::vector<double>> y_vals;
+
+    std::unique_ptr<map_data> mapData;
+    std::shared_ptr<vector<trajectory>> path;
+
     double sf;
     double df;
+
     double sf_dot;
     double df_dot;
+
     double sf_dot_dot;
     double df_dot_dot;
-    double ps;
-    double pd;
-    double px;
-    double py;
-    double diff;
-    VectorXd *t;
-    ofstream outputfile;
 
+    ofstream outputfile;
     const string filename = "../data/points.txt";
 
-    double calculatePoint(double &t, VectorXd &constants);
-
 public:
-    trajectory_generator(){
-        t = new VectorXd(6);
-
+    trajectory_generator(std::shared_ptr<vector<trajectory>> path){
         sf = 0;
         sf_dot = 0;
         sf_dot_dot = 0;
@@ -53,25 +48,23 @@ public:
         df = 0;
         df_dot = 0;
         df_dot_dot = 0;
+
         outputfile.open(filename);
 
-        ps = 0;
-        pd = 0;
-        px = 0;
-        py = 0;
-         diff = 0;
+        this->mapData = make_unique<map_data>();
+        this->path = path;
     }
     ~trajectory_generator(){
         outputfile.close();
     }
 
-    void calculatePoints(trajectory &s_option, trajectory &d_option, short size);
+    void calculatePoints(short size);
 
-    inline std::vector<double> getXVals(){
+    inline std::shared_ptr<std::vector<double>> getXVals(){
         return x_vals;
     }
 
-    inline std::vector<double> getYVals(){
+    inline std::shared_ptr<std::vector<double>> getYVals(){
         return y_vals;
     }
 

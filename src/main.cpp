@@ -37,7 +37,7 @@ int main() {
 
     shared_ptr<cost_function> costFunctions = make_shared<cost_function>(detected);
 
-    sensorfusion sensorFusion(car, detected);
+    std::unique_ptr<sensorfusion> sensorFusion = make_unique<sensorfusion>(car, detected);
 
     unique_ptr<behavior_planner> behaviorPlanner;
 
@@ -49,7 +49,7 @@ int main() {
         return -1;
     }
 
-    trajectory_generator generator;
+    std::unique_ptr<trajectory_generator> generator = make_unique<trajectory_generator>();
 
     short count = 0;
 
@@ -101,7 +101,7 @@ int main() {
                          << end_path_s << "\tend_path_d: " << end_path_d << endl;
                     */
 
-                    if(size <= 2){
+                    if(size == 0){
                         // use current position
                         // cout << "initialize" << endl;
                         car->initialize(car_s, car_d, car_speed * mph_to_mps);
@@ -121,19 +121,21 @@ int main() {
 
                         */
 
-                        vector<double> sf = generator.sfVals();
-                        vector<double> df = generator.dfVals();
+                        vector<double> sf = generator->sfVals();
+                        vector<double> df = generator->dfVals();
                         cout << "s: " << sf[0] << "\tvelocity: " << sf[1] << "\tacceleration: " << sf[2];
                         cout << "\td: " << df[0] << "\tvelocity: " << df[1] << "\tacceleration: " << df[2] << endl;
                         car->update(end_path_s, sf[1], sf[2], end_path_d, df[1], df[2]);
                         // car.update(sf[0], sf[1], sf[2], df[0], df[1], df[2]);
                         // car.update(end_path_s, velocity, acceleration, end_path_d, df[1], df[2]);
                     }
-                    cout << car << endl;
-                    detected.reset();
+                    cout << *car.get() << endl;
+                    if(detected->size() > 0)
+                        detected->clear();
 
-                    future<void> sf(async(launch::async, [&sensorFusion, &sensor_fusion_data, &previous_path_x, &previous_path_y, &car, &size]{
-                        sensorFusion.predict(sensor_fusion_data, size);
+                    future<void> sf(async(launch::async, [&sensorFusion, &sensor_fusion_data, &size]{
+                        // std::cout << "starting sensor fusion" << std::endl;
+                        sensorFusion->predict(sensor_fusion_data, size);
                     }));
 
                     // values.reset(car.getLane());

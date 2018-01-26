@@ -28,7 +28,7 @@ public:
     }
 
     ~sensorfusion(){
-        hashmap.clear();
+        std::cout << "sensorfusion destructor" << std::endl;
     }
 
     void predict(nlohmann::basic_json<> &sensor_fusion, double size);

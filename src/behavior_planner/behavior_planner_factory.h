@@ -29,7 +29,7 @@ public:
         // std::cout << "behavior_planner_factory constructor" << std::endl;
     }
     ~behavior_planner_factory(){
-        std::cout << "behavior_planner_factory destructor" << std::endl;
+        // std::cout << "behavior_planner_factory destructor" << std::endl;
         assert(!cityPlanners); // making sure that the factory no longer owns the planner pools
         assert(!highwayPlanners); // making sure that the factory no longer owns the planner pools
         assert(calculators.use_count() > 0); // make sure the calculators are shared

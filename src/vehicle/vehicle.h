@@ -99,7 +99,12 @@ public:
         return d + velocity_d * time + .5 * acceleration_d * pow(time, 2);
     }
 
+    virtual std::ostream& print(std::ostream& os) const {
+        return os << "vehicle\t";
+    }
+
     friend std::ostream& operator <<(std::ostream& os, vehicle& obj){
+        obj.print(os);
         os << "[ s = " << obj.s << ", d = " << obj.d << ", velocity_s = " << obj.velocity_s << ", acceleration_s = "
            << obj.acceleration_s << ", velocity_d = " << obj.velocity_d << ", acceleration_d = " << obj.acceleration_d
            << " ]";

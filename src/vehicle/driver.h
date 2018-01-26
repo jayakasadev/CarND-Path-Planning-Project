@@ -22,11 +22,8 @@ public:
 
     void update(double s, double s_dot, double s_dot_dot, double d, double d_dot, double d_dot_dot);
 
-    friend std::ostream& operator <<(std::ostream& os, driver& obj){
-        os << "driver:\t" << "[ s = " << obj.s << ", d = " << obj.d << ", velocity_s = " << obj.velocity_s
-                          << ", acceleration_s = " << obj.acceleration_s << ", velocity_d = " << obj.velocity_d
-                          << ", acceleration_d = " << obj.acceleration_d << " ]";
-        return os;
+    virtual std::ostream& print(std::ostream& os) const {
+        return os << "driver\t";
     }
 };
 

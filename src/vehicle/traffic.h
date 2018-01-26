@@ -8,7 +8,6 @@
 class traffic : public vehicle {
 private:
     std::chrono::high_resolution_clock::time_point last_Seen;
-
     bool first;
 
     inline void checkOutdated() {
@@ -33,17 +32,29 @@ public:
         first = true;
     }
 
+    traffic(const traffic &obj) {
+        std::cout << "traffic copy constructor" << std::endl;
+        this->last_Seen = obj.last_Seen; // update last seen time
+        this->first = obj.first;
+
+        this->velocity_d = obj.velocity_d;
+        this->velocity_s = obj.velocity_s;
+
+        this->s = obj.s;
+        this->d = obj.d;
+
+        this->acceleration_s = obj.acceleration_s;
+        this->acceleration_d = obj.acceleration_d;
+    }
+
     ~traffic() {
         std::cout << "traffic destructor" << std::endl;
     }
 
     void update(double vx, double vy, double s, double d);
 
-    friend std::ostream& operator <<(std::ostream& os, traffic& obj){
-        os << "traffic:\t" << "[ s = " << obj.s << ", d = " << obj.d << ", velocity_s = " << obj.velocity_s
-           << ", acceleration_s = " << obj.acceleration_s << ", velocity_d = " << obj.velocity_d
-           << ", acceleration_d = " << obj.acceleration_d << " ]";
-        return os;
+    virtual std::ostream& print(std::ostream& os) const {
+        return os << "traffic\t";
     }
 };
 

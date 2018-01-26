@@ -1,7 +1,7 @@
 #include "sensor_fusion.h"
 
 void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
-    // cout << "sensor_fusion::predict" << endl;
+    // std::cout << "sensor_fusion::predict" << std::endl;
     // read everything into the hash_map and score the lane it is in
     double search_radius_at_curr_v = getSearchRadius();
     // std::cout << "search radius: " << search_radius_at_curr_v << std::endl;
@@ -14,28 +14,32 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
         double s = sensor_fusion[a][5]; // s value of the ath car
         double d = sensor_fusion[a][6]; // this is the d value for the ath vehicle
         if(d >= 0 && d <= num_lanes * 4){ // only care for vehicles in lanes that i can go in
-            // cout << id << " || vx = " << vx << " || vy = " << vy << endl;
-            // cout << "map: " << hashmap.size() << endl;
+            // std::cout << id << " || vx = " << vx << " || vy = " << vy << std::endl;
+            // std::cout << "map: " << hashmap.size() << std::endl;
             if(hashmap.find(id) == hashmap.end()){
-                hashmap[id] = std::shared_ptr<traffic>(); // add new element
+                hashmap[id] = std::make_shared<traffic>(); // add new element
             }
             hashmap.at(id)->update(vx, vy, s, d);
 
-            // hashmap.at(id)->print();
-
             // is the vehicle near me?
             if(abs(car->getS() - s) <= search_radius_at_curr_v){
-                detected->add(hashmap.at(id).get());
-            }
-
-            // check if the vehicle passes by my car at any point in the next second
-            for(double time = refresh_rate; time <= time_period; time += refresh_rate){
-                if(abs(hashmap.at(id)->getPredictedS(time) - car->getS()) <= search_radius_at_curr_v){
-                    detected->add(hashmap.at(id).get());
+                // std::cout << "sensor_fusion predict addr: "  << hashmap.at(id).get() << std::endl;
+                detected->add(hashmap.at(id));
+            } else {
+                // check if the vehicle passes by my car at any point in the next second
+                for(double time = refresh_rate; time <= time_period; time += refresh_rate){
+                    if(abs(hashmap.at(id)->getPredictedS(time) - car->getS()) <= search_radius_at_curr_v){
+                        // std::cout << "sensor_fusion predict addr: "  << hashmap.at(id).get() << std::endl;
+                        detected->add(hashmap.at(id));
+                        break;
+                    }
                 }
             }
         }
     }
 
-    // detected->print();
+    /*
+    if(detected->size() > 0)
+        std::cout << *detected.get() << std::endl;
+    */
 }

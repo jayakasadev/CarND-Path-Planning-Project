@@ -20,7 +20,6 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
     if(lazy_loading){
         calculators = std::make_shared<synch_unique_pool<trajectory_calculator>>();
         for(short a = 0; a < calculator_instance_limit; a++){
-            calculators->release(new trajectory_calculator());
             // TODO implement
         }
 
@@ -28,7 +27,7 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
         calculators = std::make_shared<shared_pool<trajectory_calculator>>();
         for(short a = 0; a < calculator_instance_max; a++){
             // std::cout << "adding new obj" << std::endl;
-            trajectory_calculator * ptr = new trajectory_calculator();
+            std::shared_ptr<trajectory_calculator> ptr = std::make_shared<trajectory_calculator>();
             ptr->initialize(time_period + a * refresh_rate);
             calculators->add(ptr);
             // std::cout << *ptr << std::endl;
@@ -39,9 +38,6 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
     highwayPlanners = make_unique<shared_pool<planner>>();
 
     for(short a = 0; a < num_lanes; a++){
-
-        city_planner * city = new city_planner();
-        highway_planner * highway = new highway_planner();
 
         std::shared_ptr<pointer_pool<points>> calculation_s = std::make_shared<shared_pool<points>>();
         std::shared_ptr<pointer_pool<points>> calculation_d = std::make_shared<shared_pool<points>>();
@@ -54,7 +50,7 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
             } else {
                 calculated_points = std::make_shared<shared_pool<trajectory>>();
                 for(short c = 0; c <= num_points; c++){
-                    trajectory * ptr = new trajectory();
+                    std::shared_ptr<trajectory> ptr = std::make_shared<trajectory>();
                     ptr->setTime(time_period + c * refresh_rate);
                     ptr->setType(S);
                     calculated_points->add(ptr);
@@ -63,7 +59,7 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
             }
 
             // build point for s point
-            points * ptr = new points(calculators, calculated_points);
+            std::shared_ptr<points> ptr = std::make_shared<points>(calculators, calculated_points);
             calculation_s->add(ptr);
             // std::cout << *ptr << std::endl;
         }
@@ -76,7 +72,7 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
         } else {
             calculated_points = std::make_shared<shared_pool<trajectory>>();
             for(short b = 0; b <= num_points; b++){
-                trajectory * ptr = new trajectory();
+                std::shared_ptr<trajectory> ptr = std::make_shared<trajectory>();
                 ptr->setTime(time_period + b * refresh_rate);
                 ptr->setType(D);
                 calculated_points->add(ptr);
@@ -85,15 +81,17 @@ void behavior_planner_factory::build(std::shared_ptr<driver> car, std::shared_pt
         }
 
         // build point for d point
-        points * ptr = new points(calculators, calculated_points);
+        std::shared_ptr<points> ptr = std::make_shared<points>(calculators, calculated_points);
         calculation_d->add(ptr);
         // std::cout << *ptr << std::endl;
 
+        std::shared_ptr<city_planner> city = std::make_shared<city_planner>();
         // build the city and highway planners with the shared data sources
         city->setCalculations(calculation_s, calculation_d);
         city->setCar(car);
         city->setLane(a);
 
+        std::shared_ptr<highway_planner> highway = std::make_shared<highway_planner>();
         highway->setCalculations(calculation_s, calculation_d);
         highway->setCar(car);
         highway->setLane(a);
