@@ -12,9 +12,8 @@
 #include <string>
 
 #include "../Eigen-3.3/Eigen/Dense"
-#include "../constants/road_constants.h"
-#include "../map/map.h"
-#include "../vehicle/driver.h"
+#include "../constants/simulator_constants.h"
+#include "map/map.h"
 #include "../trajectory/trajectory.h"
 
 using namespace Eigen;
@@ -24,7 +23,7 @@ class trajectory_generator {
 private:
     std::vector<double> x_vals;
     std::vector<double> y_vals;
-    const map_data * mapData;
+    const map_data mapData;
     double sf;
     double df;
     double sf_dot;
@@ -44,8 +43,7 @@ private:
     double calculatePoint(double &t, VectorXd &constants);
 
 public:
-    trajectory_generator(const map_data &mapData){
-        this->mapData = &mapData;
+    trajectory_generator(){
         t = new VectorXd(6);
 
         sf = 0;

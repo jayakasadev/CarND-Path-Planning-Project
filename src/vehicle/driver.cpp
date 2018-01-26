@@ -24,8 +24,3 @@ void driver::update(double s, double s_dot, double s_dot_dot, double d, double d
     this->velocity_d = d_dot;
     this->acceleration_d = d_dot_dot;
 }
-
-void driver::print(){
-    std::cout << "driver:\t";
-    vehicle::print();
-}

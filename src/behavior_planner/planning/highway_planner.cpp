@@ -8,6 +8,6 @@ void highway_planner::calculateD(){
 }
 
 void highway_planner::calculate() {
-    generatePoints();
+    generateRandomPoints();
     printGenerated();
 }

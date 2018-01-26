@@ -39,10 +39,10 @@ public:
     void write_lock(){
         std::unique_lock<std::mutex> lock(mutex);
         ++waiting_writers;
-        while(live_readers > 0 && live_writers > 0){ // do not want to lock in the middle of another read or write operation
+        while(live_readers > 0 || live_writers > 0){ // do not want to lock in the middle of another read or write operation
             write_permission.wait(lock); // wait until i can read
         }
-        ++live_readers; // actively writing
+        ++live_writers; // actively writing
         lock.unlock();
     }
 

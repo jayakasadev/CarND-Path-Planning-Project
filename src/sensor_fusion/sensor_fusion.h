@@ -6,30 +6,28 @@
 #include "../utilities/json.hpp"
 #include "../vehicle/driver.h"
 #include "../vehicle/traffic.h"
-#include "../constants/sensor_fusion_constants.h"
-#include "../detections/detections.h"
+#include "../tunable_params/sensor_fusion_tunable.h"
+#include "../utilities/pools/pointer_pool.h"
 
 class sensorfusion {
 private:
-    std::unordered_map<short, traffic *> hashmap;
-    driver * car;
-    detections * detected;
+    std::unordered_map<short, std::shared_ptr<traffic>> hashmap;
+    std::shared_ptr<driver> car;
+    std::shared_ptr<pointer_pool<traffic>> detected;
 
     inline float getSearchRadius() {
         return search_radius + growth_rate * car->getVelocityS();
     }
 
 public:
-    sensorfusion(driver &car, detections &detected){
-        this->car = &car;
-        this->detected = &detected;
+    sensorfusion(std::shared_ptr<driver> car, std::shared_ptr<pointer_pool<traffic>> detected){
+        // std::cout << "sensorfusion constructor" << std::endl;
+        this->car = car;
+        this->detected = detected;
+        // car->print();
     }
 
     ~sensorfusion(){
-        for(auto itr = hashmap.begin(); itr != hashmap.end(); itr++) {
-            delete itr->second;
-            hashmap.erase(itr->first);
-        }
         hashmap.clear();
     }
 

@@ -19,7 +19,7 @@ void trajectory_generator::calculatePoints(trajectory &s_option, trajectory &d_o
         // double jerk_s = (*t).transpose() * *s_option.vector;
         // double jerk_d = (*t).transpose() * *d_option.vector;
 
-        std::vector<double> xy = mapData->getXY(s, d);
+        std::vector<double> xy = mapData.getXY(s, d);
 
         double curr_diff = s - ps;
         if(curr_diff >= 2 * diff){

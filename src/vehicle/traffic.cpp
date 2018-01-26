@@ -24,8 +24,3 @@ void traffic::update(double vx, double vy, double s, double d){
     this->s = s;
     this->d = d;
 }
-
-void traffic::print() {
-    std::cout << "traffic:\t";
-    vehicle::print();
-}

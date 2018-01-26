@@ -2,23 +2,20 @@
 #define PATH_PLANNING_TRAEJCTORY_H
 
 #include <iostream>
+#include <memory>
 #include "../enums/trajectory_type.h"
 #include "../Eigen-3.3/Eigen/Dense"
-#include "../constants/road_constants.h"
+#include "../constants/simulator_constants.h"
+#include "../utilities/unique_ptr_helper.h"
 
 class trajectory{
 private:
     trajectory_type type;
-    Eigen::VectorXd *vector;
+    Eigen::VectorXd vector;
     short count;
     double time;
     double score;
-    bool invalid;
     double prev_point;
-
-    inline bool isInvalid(){
-        return this->invalid;
-    }
 
     /**
      * Method to check if this trajectory has points available
@@ -31,18 +28,33 @@ private:
     }
 
 public:
-    trajectory(trajectory_type type, double time){
+    trajectory(){
         // std::cout << "trajectory constructor\ttime: " << time << std::endl;
-        this->type = type;
-        this->vector = new Eigen::VectorXd(6);
+        this->vector = Eigen::VectorXd::Zero(6);
         this->count = 0;
-        this->invalid = false;
-        this->time = time;
+        this->score = 0;
+    }
+
+    trajectory(const trajectory &trajectory){
+        // std::cout << "trajectory copy constructor\ttime: " << time << std::endl;
+        this->vector = trajectory.vector;
+        this->count = trajectory.count;
+        this->type = trajectory.type;
+        this->time = trajectory.time;
+        this->score = trajectory.score;
+        this->prev_point = trajectory.prev_point;
     }
 
     ~trajectory(){
-        // std::cout << "trajectory destructor\ttime: " << time << std::endl;
-        delete vector;
+        std::cout << "trajectory destructor\ttime: " << time << std::endl;
+    }
+
+    inline void setType(trajectory_type type){
+        this->type = type;
+    }
+
+    inline void setTime(double time){
+        this->time = time;
     }
 
     /**
@@ -54,7 +66,7 @@ public:
     std::vector<double> getPoints(short n);
 
     inline Eigen::VectorXd getVector(){
-        return *vector;
+        return vector;
     }
 
     inline trajectory_type getType(){
@@ -69,16 +81,27 @@ public:
         this->score += subscore;
     }
 
-    inline void setInvalid(){
-        this->invalid = true;
+    inline bool isValid(){
+        return abs(vector[1]) < max_velocity_mps && abs(vector[2]) < max_acceleration && abs(vector[3]) < max_jerk;
     }
 
     inline void reset(){
         this->count = 0;
-        this->invalid = false;
+        this->score = 0;
     }
 
-    void print();
+    /**
+     * Method to print out option information
+     *
+     * @param os
+     * @param obj
+     * @return ostream to print object
+     */
+    friend std::ostream& operator <<(std::ostream& os, trajectory& obj){
+        os << "trajectory: " << obj.vector.transpose() << "\nvalidity: " << obj.isValid() << "\nscore: "
+           << obj.score << "\ntime: " << obj.time << "\tcount: " << obj.count;
+        return os;
+    }
 };
 
 #endif //PATH_PLANNING_TRAEJCTORY_H

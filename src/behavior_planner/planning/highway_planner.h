@@ -14,12 +14,16 @@ private:
     void calculateD();
 
 public:
-    highway_planner(driver &car, detections &detected, vector<trajectory_option *> &calculators, short lane) : planner(car, detected, calculators, lane){
-        cout << "highway_planner constructor" << endl;
+    highway_planner() : planner(){
+        std::cout << "highway_planner constructor" << std::endl;
     }
 
     ~highway_planner(){
-        cout << "highway_planner destructor" << endl;
+        std::cout << "highway_planner destructor" << std::endl;
+    }
+
+    highway_planner(const highway_planner &highway_planner){
+        std::cout << "highway_planner copy constructor" << std::endl;
     }
 
     void calculate();

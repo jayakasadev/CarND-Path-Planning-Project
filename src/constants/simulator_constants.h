@@ -10,13 +10,15 @@ const float max_s = 6945.554;
 
 const float num_lanes = 3;
 
-const float max_jerk = 50;
+const float max_jerk = 50; // m / s / s / s
 
-const float max_acceleration = 10;
+const float max_acceleration = 10; // m / s / s
 
 const double max_velocity = 50.0;
 
 const double mph_to_mps = 0.44704; // 1 mph = 0.44704 m/s
+
+const double max_velocity_mps = max_velocity * mph_to_mps;
 
 const float time_period = 1.0;
 

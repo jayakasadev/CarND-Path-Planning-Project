@@ -6,7 +6,7 @@
 #define PATH_PLANNING_UTILITIES_H
 
 #include <math.h>
-#include "../constants/road_constants.h"
+#include "../constants/simulator_constants.h"
 
 // For converting back and forth between radians and degrees.
 static inline constexpr double pi() { return M_PI; }

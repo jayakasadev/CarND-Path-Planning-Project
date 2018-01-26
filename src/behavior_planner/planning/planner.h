@@ -2,63 +2,24 @@
 #define PATH_PLANNING_PLANNER_H
 
 #include "../../vehicle/driver.h"
-#include "../../detections/detections.h"
-#include "../trajectory_option/trajectory_option.h"
+#include "../../utilities/pools/pointer_pool.h"
+#include "../trajectory_calculator/trajectory_calculator.h"
 #include "../../trajectory/trajectory.h"
-
-using namespace std;
+#include "../../vehicle/traffic.h"
+#include "../points/points.h"
 
 class planner{
-
-public:
-
-    planner(driver &car, detections &detected, vector<trajectory_option *> &calculators, short lane){
-        cout << "planner constructor" << endl;
-        // cout << "city_planner" << endl;
-        this->car = &car;
-        this->calculators = calculators;
-        this->detected = &detected;
-        this->lane = lane;
-
-        for(short a = 0; a < (num_generated_s_points * (num_points + 1)); a++){
-            // text all possible time T for each generated point before moving to the next
-            trajectory * s_traj = new trajectory(trajectory_type::S, time_period + (a % (num_points + 1)) * refresh_rate);
-            s_trajectories.push_back(s_traj);
-        }
-
-        for(short a = 0; a < (num_points + 1); a++){
-            // text all possible time T for each generated point before moving to the next
-            trajectory * traj_d = new trajectory(trajectory_type::D, time_period + a * refresh_rate);
-            d_trajectories.push_back(traj_d);
-        }
-    }
-
-    ~planner(){
-        cout << "planner destructor" << endl;
-        for(short a = 0; a < s_trajectories.size(); a++){
-            delete s_trajectories[a];
-        }
-        s_trajectories.clear();
-
-        for(short a = 0; a <  d_trajectories.size(); a++){
-            delete d_trajectories[a];
-        }
-        d_trajectories.clear();
-    }
-
 protected:
-    vector<trajectory_option *> calculators;
-    vector<trajectory *> s_trajectories;
-    vector<trajectory *> d_trajectories;
-    vector<double> generated;
-    driver * car;
-    detections * detected;
+    std::vector<double> generated;
+    std::shared_ptr<pointer_pool<points>> calculation_s;
+    std::shared_ptr<pointer_pool<points>> calculation_d;
+    std::shared_ptr<driver> car;
     short lane;
 
     /**
      * Method to generate random points
      */
-    inline void generatePoints(){
+    inline void generateRandomPoints(){
         generated.clear();
         for(short a = 0; a < num_generated_s_points; a++){
             double random = (double)rand() / RAND_MAX;
@@ -71,10 +32,44 @@ protected:
      */
     inline void printGenerated(){
         for(short a = 0; a < generated.size(); a++){
-            cout << "generated: " << generated[a] << endl;
+            std::cout << "generated: " << generated[a] << std::endl;
         }
     }
+public:
 
+    planner(){
+        // std::cout << "planner constructor" << std::endl;
+    }
+
+    ~planner(){
+        std::cout << "planner destructor" << std::endl;
+    }
+
+    planner(const planner &planner){
+        // std::cout << "planner copy constructor" << std::endl;
+        this->car = planner.car;
+        this->calculation_s = planner.calculation_s;
+        this->calculation_d = planner.calculation_d;
+        this->lane = planner.lane;
+    }
+
+    void setLane(short lane){
+        this->lane = lane;
+    }
+
+    void setCar(std::shared_ptr<driver> car){
+        this->car = car;
+    }
+
+    void setCalculations(std::shared_ptr<pointer_pool<points>> calculation_s, std::shared_ptr<pointer_pool<points>> calculation_d){
+        this->calculation_s = calculation_s;
+        this->calculation_d = calculation_d;
+    }
+
+    friend std::ostream& operator <<(std::ostream& os, planner& planner){
+        os << "planner\tlane:" << planner.lane;
+        return os;
+    }
 };
 
 #endif //PATH_PLANNING_PLANNER_H

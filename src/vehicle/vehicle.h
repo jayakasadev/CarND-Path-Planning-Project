@@ -23,6 +23,7 @@ protected:
 
 public:
     vehicle(){
+        // std::cout << "vehicle constructor" << std::endl;
         s = 0;
         d = 0;
         velocity_s = 0;
@@ -30,7 +31,9 @@ public:
         acceleration_s = 0;
         acceleration_d = 0;
     }
-    ~vehicle(){}
+    ~vehicle(){
+        std::cout << "vehicle destructor" << std::endl;
+    }
 
     inline double getS(){
         return s;
@@ -96,10 +99,11 @@ public:
         return d + velocity_d * time + .5 * acceleration_d * pow(time, 2);
     }
 
-    inline void print(){
-        std::cout << "[ s = " << s << ", d = " << d << ", velocity_s = " << velocity_s << ", acceleration_s = "
-                  << acceleration_s << ", velocity_d = " << velocity_d << ", acceleration_d = " << acceleration_d
-                  << " ]" << std::endl;
+    friend std::ostream& operator <<(std::ostream& os, vehicle& obj){
+        os << "[ s = " << obj.s << ", d = " << obj.d << ", velocity_s = " << obj.velocity_s << ", acceleration_s = "
+           << obj.acceleration_s << ", velocity_d = " << obj.velocity_d << ", acceleration_d = " << obj.acceleration_d
+           << " ]";
+        return os;
     }
 };
 

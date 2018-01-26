@@ -8,58 +8,35 @@
 #include <future>
 #include <vector>
 
-#include "../Eigen-3.3/Eigen/Dense"
-#include "../constants/road_constants.h"
-#include "../constants/behavior_constants.h"
+#include "../tunable_params/behavior_planning_tunable.h"
 #include "../vehicle/driver.h"
-#include "planning/city_planner.h"
-#include "planning/highway_planner.h"
-#include "../detections/detections.h"
 #include "../trajectory/trajectory.h"
-#include "trajectory_option/trajectory_option.h"
+#include "planning/planner.h"
 
 using namespace Eigen;
-using namespace std;
 
 class behavior_planner {
 private:
-    vector<highway_planner *> highwayPlanner;
-    vector<city_planner *> cityPlanner;
-    vector<trajectory_option *> calculators;
-    driver * car;
+    std::unique_ptr<pointer_pool<planner>> cityPlanners;
+    std::unique_ptr<pointer_pool<planner>> highwayPlanners;
+    std::shared_ptr<driver> car;
 
 public:
-    behavior_planner(driver &car, detections &detected){
-        cout << "behavior_planner constructor" << endl;
-        this->car = &car;
 
-        for(short a = 0; a <= num_points; a++){
-            trajectory_option * opt = new trajectory_option(time_period + refresh_rate * a);
-            calculators.push_back(opt);
-        }
+    behavior_planner(std::shared_ptr<driver> car, std::unique_ptr<pointer_pool<planner>> &cityPlanner,
+                     std::unique_ptr<pointer_pool<planner>> &highwayPlanner){
+        std::cout << "behavior_planner constructor" << std::endl;
+        this->car = car;
+        this->cityPlanners = std::move(cityPlanners);
+        this->highwayPlanners = std::move(highwayPlanners);
 
-        for(short a = 0; a < num_lanes; a++){
-            highway_planner * hp = new highway_planner(car, detected, calculators, a);
-            highwayPlanner.push_back(hp);
-            city_planner * cp = new city_planner(car, detected, calculators, a);
-            cityPlanner.push_back(cp);
-        }
-        // cout << "size highway: " << highwayPlanner.size() << "\tsize city: " << cityPlanner.size() << endl;
-        // highwayPlanner[0].calculate();
-        // cityPlanner[0].calculate();
     }
 
     ~behavior_planner(){
-        cout << "behavior_planner destructor" << endl;
-        /*
-        for(short a = 0; a < calculators.size(); a++){
-            delete calculators[a];
-        }
-        calculators.clear();
-         */
+        std::cout << "behavior_planner destructor" << std::endl;
     }
 
-    vector<trajectory> plan();
+    std::vector<trajectory> plan();
 };
 
 

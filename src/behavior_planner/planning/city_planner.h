@@ -12,12 +12,16 @@ class city_planner : public planner{// behavior based on velocity
 private:
 
 public:
-    city_planner(driver &car, detections &detected, vector<trajectory_option *> &calculators, short lane): planner(car, detected, calculators, lane){
-        cout << "city_planner constructor" << endl;
+    city_planner() : planner(){
+        std::cout << "city_planner constructor" << std::endl;
     }
 
     ~city_planner(){
-        cout << "city_planner destructor" << endl;
+        std::cout << "city_planner destructor" << std::endl;
+    }
+
+    city_planner(const city_planner &city_planner){
+        std::cout << "city_planner copy constructor" << std::endl;
     }
 
     void calculate();

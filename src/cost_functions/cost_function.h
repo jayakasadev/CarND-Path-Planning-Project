@@ -1,33 +1,39 @@
 //
-// Created by jay on 1/12/18.
+// Created by jay on 1/18/18.
 //
 
-#ifndef PATH_PLANNING_MODE_H
-#define PATH_PLANNING_MODE_H
+#ifndef PATH_PLANNING_COST_FUNCTION_H
+#define PATH_PLANNING_COST_FUNCTION_H
 
+#include <iostream>
 #include "../Eigen-3.3/Eigen/Dense"
-#include "../constants/road_constants.h"
-#include "../constants/drive_mode_constants.h"
+#include "../utilities/pools/pointer_pool.h"
+#include "../tunable_params/cost_function_tunable.h"
+#include "drive_mode/drive_modes.h"
+#include "../vehicle/traffic.h"
 
-class regular_mode {
-protected:
+class cost_function{
+private:
+    mode currMode;
+    std::shared_ptr<pointer_pool<traffic>> detected;
+
     inline double logistic(double x){
         return 2.0 / (1 + exp(-x)) - 1.0;
     }
-    float buffer_distance;
-    float desired_acceleration;
-    float desired_jerk;
+
+    void setDriveMode();
 
 public:
 
-    regular_mode(){
-        buffer_distance = buffer_interval * regular_buffer_multiple; // 5m
-        desired_acceleration = max_acceleration * regular_rate; // 3.33 m/s/s
-        desired_jerk = max_jerk * regular_rate; // 16.67 m/s/s/s
+    cost_function(std::shared_ptr<pointer_pool<traffic>> detected){
+        std::cout << "cost_function constructor" << std::endl;
+        this->detected = detected;
+        setDriveMode();
     }
 
-    ~regular_mode(){}
-
+    ~cost_function(){
+        std::cout << "cost_function destructor" << std::endl;
+    }
     /**
      * Penalizes trajectories that span a duration which is longer or shorter than the duration requested.
      *
@@ -75,26 +81,4 @@ public:
     double avg_acc_cost(Eigen::VectorXd &s, double time);
 };
 
-class sport_mode : public regular_mode{
-public:
-    sport_mode(){
-        buffer_distance = buffer_interval * sport_buffer_multiple; // 2.5m
-        desired_acceleration = max_acceleration * sport_rate; // 5 m/s/s
-        desired_jerk = max_jerk * sport_rate; // 25 m/s/s/s
-    }
-
-    ~sport_mode(){}
-};
-
-class eco_mode : public regular_mode{
-public:
-    eco_mode(){
-        buffer_distance = buffer_interval * eco_buffer_multiple; // 7.5m
-        desired_acceleration = max_acceleration * eco_rate; // 2 m/s/s
-        desired_jerk = max_jerk * eco_rate; // 10 m/s/s/s
-    }
-
-    ~eco_mode(){}
-};
-
-#endif //PATH_PLANNING_MODE_H
+#endif //PATH_PLANNING_COST_FUNCTION_H

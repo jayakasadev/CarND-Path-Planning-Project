@@ -1,13 +1,9 @@
-//
-// Created by jay on 12/9/17.
-//
-
 #ifndef PATH_PLANNING_TRAFFIC_H
 #define PATH_PLANNING_TRAFFIC_H
 
 #include <chrono>
 #include "vehicle.h"
-#include "../constants/sensor_fusion_constants.h"
+#include "../tunable_params/sensor_fusion_tunable.h"
 
 class traffic : public vehicle {
 private:
@@ -37,11 +33,18 @@ public:
         first = true;
     }
 
-    ~traffic() {}
+    ~traffic() {
+        std::cout << "traffic destructor" << std::endl;
+    }
 
     void update(double vx, double vy, double s, double d);
 
-    void print();
+    friend std::ostream& operator <<(std::ostream& os, traffic& obj){
+        os << "traffic:\t" << "[ s = " << obj.s << ", d = " << obj.d << ", velocity_s = " << obj.velocity_s
+           << ", acceleration_s = " << obj.acceleration_s << ", velocity_d = " << obj.velocity_d
+           << ", acceleration_d = " << obj.acceleration_d << " ]";
+        return os;
+    }
 };
 
 

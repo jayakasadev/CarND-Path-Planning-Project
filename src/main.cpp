@@ -3,11 +3,10 @@
 
 #include "Eigen-3.3/Eigen/Dense"
 #include "utilities/json.hpp"
-#include "map/map.h"
-#include "vehicle/vehicle.h"
 #include "sensor_fusion/sensor_fusion.h"
 #include "trajectory_generation/trajectory_generator.h"
 #include "behavior_planner/behavior_planner.h"
+#include "behavior_planner/behavior_planner_factory.h"
 
 using namespace std;
 
@@ -32,21 +31,29 @@ string hasData(string s) {
 int main() {
     uWS::Hub h;
 
-    map_data mapData;
+    shared_ptr<driver> car = make_shared<driver>();
 
-    driver car;
+    shared_ptr<pointer_pool<traffic>> detected = make_shared<shared_pool<traffic>>();
 
-    detections detected;
+    shared_ptr<cost_function> costFunctions = make_shared<cost_function>(detected);
 
     sensorfusion sensorFusion(car, detected);
 
-    behavior_planner behaviorPlanner(car, detected);
+    unique_ptr<behavior_planner> behaviorPlanner;
 
-    trajectory_generator generator(mapData);
+    try{
+        behavior_planner_factory factory;
+        behaviorPlanner = factory.getInstance(car, costFunctions);
+    } catch (exception& e){
+        cerr << e.what() << endl;
+        return -1;
+    }
+
+    trajectory_generator generator;
 
     short count = 0;
 
-    h.onMessage([&mapData, &car, &detected, &sensorFusion, &generator, &behaviorPlanner, &count](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
+    h.onMessage([&car, &detected, &sensorFusion, &generator, &behaviorPlanner, &count](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -97,7 +104,7 @@ int main() {
                     if(size <= 2){
                         // use current position
                         // cout << "initialize" << endl;
-                        car.initialize(car_s, car_d, car_speed * mph_to_mps);
+                        car->initialize(car_s, car_d, car_speed * mph_to_mps);
                     } else {
                         // cout << "keep going" << endl;
                         // use last known position at the end of the path
@@ -118,11 +125,11 @@ int main() {
                         vector<double> df = generator.dfVals();
                         cout << "s: " << sf[0] << "\tvelocity: " << sf[1] << "\tacceleration: " << sf[2];
                         cout << "\td: " << df[0] << "\tvelocity: " << df[1] << "\tacceleration: " << df[2] << endl;
-                        car.update(end_path_s, sf[1], sf[2], end_path_d, df[1], df[2]);
+                        car->update(end_path_s, sf[1], sf[2], end_path_d, df[1], df[2]);
                         // car.update(sf[0], sf[1], sf[2], df[0], df[1], df[2]);
                         // car.update(end_path_s, velocity, acceleration, end_path_d, df[1], df[2]);
                     }
-                    car.print();
+                    cout << car << endl;
                     detected.reset();
 
                     future<void> sf(async(launch::async, [&sensorFusion, &sensor_fusion_data, &previous_path_x, &previous_path_y, &car, &size]{
@@ -141,7 +148,7 @@ int main() {
 
                     // going to generate behavior is a crash is imminent of number of points is less than required
                     // sf.get();
-                    vector<trajectory> options = behaviorPlanner.plan();
+                    vector<trajectory> options = behaviorPlanner->plan();
                     /*
                     trajectory.calculatePoints(options[0], options[1], size);
 

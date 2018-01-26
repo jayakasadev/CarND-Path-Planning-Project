@@ -17,7 +17,7 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
             // cout << id << " || vx = " << vx << " || vy = " << vy << endl;
             // cout << "map: " << hashmap.size() << endl;
             if(hashmap.find(id) == hashmap.end()){
-                hashmap[id] = new traffic(); // add new element
+                hashmap[id] = std::shared_ptr<traffic>(); // add new element
             }
             hashmap.at(id)->update(vx, vy, s, d);
 
@@ -25,13 +25,13 @@ void sensorfusion::predict(nlohmann::basic_json<> &sensor_fusion, double size){
 
             // is the vehicle near me?
             if(abs(car->getS() - s) <= search_radius_at_curr_v){
-                detected->add(*hashmap.at(id));
+                detected->add(hashmap.at(id).get());
             }
 
             // check if the vehicle passes by my car at any point in the next second
             for(double time = refresh_rate; time <= time_period; time += refresh_rate){
                 if(abs(hashmap.at(id)->getPredictedS(time) - car->getS()) <= search_radius_at_curr_v){
-                    detected->add(*hashmap.at(id));
+                    detected->add(hashmap.at(id).get());
                 }
             }
         }
